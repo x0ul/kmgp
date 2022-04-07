@@ -1,0 +1,26 @@
+* This file just contains my development notes as I try mightily to get this crap working
+  To start out I'm just going to use flask and templates to
+  server-side render it all. I don't have enough brain to learn front
+  and back end dev at the same time.
+
+  If I later decide to do futher refine, I'll implement the data in
+  the templates as an api and use something like React to query it.
+
+* TODO Bootstrap the Basics
+** DONE Start this org file full of TODOs to have some goals for the project
+   CLOSED: [2022-04-07 Thu 13:01]
+** DONE Create a github project and start working in it
+   https://github.com/x0ul/kmgp
+   CLOSED: [2022-04-07 Thu 13:02]
+** TODO Make subdirs and a few READMEs
+* TODO [/] Templated Site Prototype
+  The idea here is to start with the Flask tutorial and shape it into
+  something resembling my internal concept.
+** TODO Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
+** TODO Modify the tutorial project to make the flaskr posts look more like episodes of a show
+** TODO Group the episodes under shows
+** TODO Research audio file uploading, cheap and easy is good.
+   - B2? Heard good things wrt "bandwidth alliance"
+
+* TODO [0/1] Station Computer Puller Script
+** TODO Learn enough about Windows dev to choose a language
