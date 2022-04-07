@@ -6,17 +6,20 @@
   If I later decide to do futher refine, I'll implement the data in
   the templates as an api and use something like React to query it.
 
-* TODO Bootstrap the Basics
+* DONE Bootstrap the Basics
+  CLOSED: [2022-04-07 Thu 16:45]
 ** DONE Start this org file full of TODOs to have some goals for the project
-   CLOSED: [2022-04-07 Thu 13:01]
+   CLOSED: [2022-04-07 Thu 16:45]
 ** DONE Create a github project and start working in it
    https://github.com/x0ul/kmgp
    CLOSED: [2022-04-07 Thu 13:02]
-** TODO Make subdirs and a few READMEs
-* TODO [/] Templated Site Prototype
+** DONE Make subdirs and a few READMEs
+   CLOSED: [2022-04-07 Thu 16:44]
+* TODO [1/4] Templated Site Prototype
   The idea here is to start with the Flask tutorial and shape it into
   something resembling my internal concept.
-** TODO Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
+** DONE Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
+   CLOSED: [2022-04-07 Thu 16:44]
 ** TODO Modify the tutorial project to make the flaskr posts look more like episodes of a show
 ** TODO Group the episodes under shows
 ** TODO Research audio file uploading, cheap and easy is good.
