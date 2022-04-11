@@ -15,6 +15,7 @@ CREATE TABLE post (
   author_id INTEGER NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title TEXT NOT NULL,
-  body TEXT NOT NULL,
+  air_date TIMESTAMP NOT NULL,
+  description TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
 );

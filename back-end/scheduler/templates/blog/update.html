@@ -8,8 +8,12 @@
   <form method="post">
     <label for="title">Title</label>
     <input name="title" id="title" value="{{ request.form['title'] or post['title'] }}" required>
-    <label for="body">Body</label>
-    <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
+    <label for="air_date">Air Date</label>
+    <input type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] or post['air_date'] }}" required>
+    <label for="audio_file">Episode Audio File</label>
+    <input type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
+    <label for="description">Description</label>
+    <textarea name="description" id="description">{{ request.form['description'] or post['description'] }}</textarea>
     <input type="submit" value="Save">
   </form>
   <hr>
