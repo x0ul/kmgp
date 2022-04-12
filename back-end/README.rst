@@ -1,9 +1,12 @@
-Flaskr
+KMGP DJ Show Scheduler
 ======
 
-The basic blog app built in the Flask `tutorial`_.
+Based on the basic blog app built in the Flask `tutorial`_.
 
 .. _tutorial: https://flask.palletsprojects.com/tutorial/
+
+
+Everything below is wrong! TODO: update docs.
 
 
 Install

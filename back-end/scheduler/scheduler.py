@@ -12,39 +12,39 @@ from werkzeug.exceptions import abort
 from scheduler.auth import login_required
 from scheduler.db import get_db
 
-bp = Blueprint("blog", __name__)
+bp = Blueprint("scheduler", __name__)
 
 
 @bp.route("/")
 def index():
-    """Show all the posts, most recent first."""
+    """Show all the episodes, most recent first."""
     db = get_db()
-    posts = db.execute(
-        "SELECT p.id, title, description, created, air_date, author_id, username"
-        " FROM post p JOIN user u ON p.author_id = u.id"
-        " ORDER BY created DESC"
+    # TODO do the join thing
+    episodes = db.execute(
+        "SELECT e.id, show_id, title, air_date, url, description, created_by, updated_by, created_at, updated_at"
+        " FROM Episodes e"
+        " ORDER BY air_date DESC"
     ).fetchall()
-    return render_template("blog/index.html", posts=posts)
+    return render_template("scheduler/index.html", episodes=episodes)
 
 
-def get_post(id, check_author=True):
-    """Get a post and its author by id.
+def get_episode(id):
+    """Get an episode by id.
 
-    Checks that the id exists and optionally that the current user is
-    the author.
+    TODO use the join table to check if the current auth'd user is an owner.
 
-    :param id: id of post to get
-    :param check_author: require the current user to be the author
-    :return: the post with author information
-    :raise 404: if a post with the given id doesn't exist
-    :raise 403: if the current user isn't the author
+    :param id: id of episode to get
+    TODO :param check_user: require the current user to be an owner
+    :return: the episode
+    :raise 404: if an episode with the given id doesn't exist
+    :raise 403: if the current user isn't an owner
     """
     post = (
         get_db()
         .execute(
-            "SELECT p.id, title, air_date, description, created, author_id, username"
-            " FROM post p JOIN user u ON p.author_id = u.id"
-            " WHERE p.id = ?",
+            "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
+            " FROM Episodes e"
+            " WHERE e.id = ?",
             (id,),
         )
         .fetchone()
@@ -73,6 +73,7 @@ def create():
         # TODO server-side validation of fields
 
         air_date = datetime.strptime(air_date, "%Y-%m-%dT%H:%M")
+        print(air_date)
 
         if not title:
             error = "Title is required."
@@ -82,20 +83,21 @@ def create():
         else:
             db = get_db()
             db.execute(
-                "INSERT INTO post (title, air_date, description, author_id) VALUES (?, ?, ?, ?)",
-                (title, air_date, description, g.user["id"]),
+                "INSERT INTO Episodes (show_id, title, air_date, url, description, created_by, updated_by)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (0, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO show_id, url
             )
             db.commit()
-            return redirect(url_for("blog.index"))
+            return redirect(url_for("scheduler.index"))
 
-    return render_template("blog/create.html")
+    return render_template("scheduler/create.html")
 
 
 @bp.route("/<int:id>/update", methods=("GET", "POST"))
 @login_required
 def update(id):
     """Update a post if the current user is the author."""
-    post = get_post(id)
+    post = get_episode(id)
 
     if request.method == "POST":
         title = request.form["title"]
@@ -117,9 +119,9 @@ def update(id):
                 "UPDATE post SET title = ?, air_date = ?, description = ? WHERE id = ?", (title, air_date, description, id)
             )
             db.commit()
-            return redirect(url_for("blog.index"))
+            return redirect(url_for("scheduler.index"))
 
-    return render_template("blog/update.html", post=post)
+    return render_template("scheduler/update.html", post=post)
 
 
 @bp.route("/<int:id>/delete", methods=("POST",))
@@ -130,8 +132,8 @@ def delete(id):
     Ensures that the post exists and that the logged in user is the
     author of the post.
     """
-    get_post(id)
+    get_episode(id)
     db = get_db()
     db.execute("DELETE FROM post WHERE id = ?", (id,))
     db.commit()
-    return redirect(url_for("blog.index"))
+    return redirect(url_for("scheduler.index"))

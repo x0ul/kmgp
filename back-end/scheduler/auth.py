@@ -39,7 +39,7 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = (
-            get_db().execute("SELECT * FROM user WHERE id = ?", (user_id,)).fetchone()
+            get_db().execute("SELECT * FROM Users WHERE id = ?", (user_id,)).fetchone()
         )
 
 
@@ -51,27 +51,30 @@ def register():
     password for security.
     """
     if request.method == "POST":
-        username = request.form["username"]
+        email = request.form["email"]
+        name = request.form["name"]
         password = request.form["password"]
         db = get_db()
         error = None
 
-        if not username:
-            error = "Username is required."
+        if not email:
+            error = "Email is required."
+        elif not name:
+            error = "Name is required."
         elif not password:
             error = "Password is required."
 
         if error is None:
             try:
                 db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
+                    "INSERT INTO Users (email, name, password, modified_by) VALUES (?, ?, ?, ?)",
+                    (email, name, generate_password_hash(password), 0),
                 )
                 db.commit()
             except db.IntegrityError:
-                # The username was already taken, which caused the
+                # The email was already used, which caused the
                 # commit to fail. Show a validation error.
-                error = f"User {username} is already registered."
+                error = f"User account using {email} is already registered."
             else:
                 # Success, go to the login page.
                 return redirect(url_for("auth.login"))
@@ -85,18 +88,16 @@ def register():
 def login():
     """Log in a registered user by adding the user id to the session."""
     if request.method == "POST":
-        username = request.form["username"]
+        email = request.form["email"]
         password = request.form["password"]
         db = get_db()
         error = None
         user = db.execute(
-            "SELECT * FROM user WHERE username = ?", (username,)
+            "SELECT * FROM Users WHERE email = ?", (email,)
         ).fetchone()
 
-        if user is None:
-            error = "Incorrect username."
-        elif not check_password_hash(user["password"], password):
-            error = "Incorrect password."
+        if not user or not check_password_hash(user["password"], password):
+            error = "Login failed."
 
         if error is None:
             # store the user id in a new session and return to the index
