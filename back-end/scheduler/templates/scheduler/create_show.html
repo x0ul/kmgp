@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}New Show{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="title">Title</label>
+    <input name="title" id="title" value="{{ request.form['title'] }}" required>
+    <label for="co_hosts">Select any Co-Owners</label>
+    <select multiple name="co_hosts" id="co_hosts">
+      {% for dj in djs %}
+      <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
+      {% endfor %}
+    </select>
+    <label for="description">Description</label>
+    <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}

@@ -1,30 +1,30 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Episodes{% endblock %}</h1>
+  <h1>{% block title %}My Shows and Episodes{% endblock %}</h1>
   {% if g.user %}
-    <a class="action" href="{{ url_for('scheduler.create') }}">New</a>
+    <a class="action" href="{{ url_for('scheduler.create_show') }}">New Show</a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-  {% for episode in episodes %}
-    <article class="episode">
+  {% for show in shows %}
+    <article class="show">
       <header>
         <div>
-          <h1>Scheduled to air {{ episode['air_date'].isoformat(" ") }}</h1>
-          <h2>{{ episode['title'] }}</h2>
-          <div class="about">Created by {{ episode['created_by'] }} on {{ episode['created_at'].isoformat(" ") }}</div>
-          <div class="about">Updated by {{ episode['updated_by'] }} on {{ episode['updated_at'].isoformat(" ") }}</div>
+          <h1>{{ show['title'] }}</h1>
+          <div class="about">Created by {{ show['created_by'] }} on {{ show['created_at'].isoformat(" ") }}</div>
+          <div class="about">Updated by {{ show['updated_by'] }} on {{ show['updated_at'].isoformat(" ") }}</div>
         </div>
-        {% if g.user['id'] == episode['show_id'] %}
-          <a class="action" href="{{ url_for('scheduler.update', id=episode['id']) }}">Edit</a>
+        {% if g.user['id'] in show['user_ids'] %}
+          <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
         {% endif %}
       </header>
-      <p class="body">{{ episode['description'] }}</p>
+      <p class="body">{{ show['description'] }}</p>
     </article>
     {% if not loop.last %}
       <hr>
     {% endif %}
   {% endfor %}
+
 {% endblock %}
