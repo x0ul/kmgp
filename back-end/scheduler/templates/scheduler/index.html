@@ -16,9 +16,7 @@
           <div class="about">Created by {{ show['created_by'] }} on {{ show['created_at'].isoformat(" ") }}</div>
           <div class="about">Updated by {{ show['updated_by'] }} on {{ show['updated_at'].isoformat(" ") }}</div>
         </div>
-        {% if g.user['id'] in show['user_ids'] %}
           <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
-        {% endif %}
       </header>
       <p class="body">{{ show['description'] }}</p>
     </article>

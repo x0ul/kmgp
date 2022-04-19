@@ -140,21 +140,24 @@ def get_episode(id):
 def create_show():
     """Create a new post for the current user."""
     db = get_db()
-    if request.method == "GET":
-        djs = db.execute(
-            "SELECT id, name"
-            " FROM Users"
-            " WHERE id != ?",
-            (g.user["id"],)).fetchall()
-        return render_template("scheduler/create_show.html", djs=djs)
+    # get all other djs
+    djs = db.execute(
+        "SELECT id, name"
+        " FROM Users"
+        " WHERE id != ?",
+        (g.user["id"],)).fetchall()
 
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
+        co_hosts = request.form.get("co_hosts", None)
         error = None
 
         if not title:
-            error = "Title is required."
+            error = "title is required"
+
+        if not description:
+            error = "description is required"
 
         if error:
             flash(error)
@@ -165,13 +168,24 @@ def create_show():
                 " RETURNING id",
                 (title, description, g.user["id"], g.user["id"]),
             ).fetchone()["id"]
-            print(f"show_id: {show_id}")
+
+            # add ourselves to the owners join table
             db.execute(
                 "INSERT INTO UserShowsJoin (user_id, show_id)"
                 " VALUES (?, ?)",
                 (g.user["id"], show_id))
+
+            # ...and add any co-hosts to the owners join table
+            for user in co_hosts:
+                db.execute(
+                    "INSERT INTO UserShowsJoin (user_id, show_id)"
+                    " VALUES (?, ?)",
+                    (user, show_id))
+
             db.commit()
             return redirect(url_for("scheduler.index"))
+
+    return render_template("scheduler/create_show.html", djs=djs)
 
 
 @bp.route("/episodes/create", methods=("GET", "POST"))
