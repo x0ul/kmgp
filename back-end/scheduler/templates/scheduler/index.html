@@ -1,28 +1,26 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}My Shows and Episodes{% endblock %}</h1>
-  {% if g.user %}
-    <a class="action" href="{{ url_for('scheduler.create_show') }}">New Show</a>
-  {% endif %}
+<h1>{% block title %}My Shows and Episodes{% endblock %}</h1>
+{% if g.user %}
+<a class="action" href="{{ url_for('scheduler.create_show') }}">New Show</a>
+{% endif %}
 {% endblock %}
 
 {% block content %}
-  {% for show in shows %}
-    <article class="show">
-      <header>
-        <div>
-          <h1>{{ show['title'] }}</h1>
-          <div class="about">Created by {{ show['created_by'] }} on {{ show['created_at'].isoformat(" ") }}</div>
-          <div class="about">Updated by {{ show['updated_by'] }} on {{ show['updated_at'].isoformat(" ") }}</div>
-        </div>
-          <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
-      </header>
-      <p class="body">{{ show['description'] }}</p>
-    </article>
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
-  {% endfor %}
+{% for show in shows %}
+<article class="show">
+  <header>
+    <h1>{{ show['title'] }}</h1>
+  </header>
+  <p class="body">{{ show['description'] }}</p>
+  <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
+  <div class="about">Created by {{ show['creator'] }} on {{ show['created_at'].isoformat(" ") }}</div>
+  <div class="about">Updated by {{ show['updater'] }} on {{ show['updated_at'].isoformat(" ") }}</div>
+</article>
+{% if not loop.last %}
+<hr>
+{% endif %}
+{% endfor %}
 
 {% endblock %}

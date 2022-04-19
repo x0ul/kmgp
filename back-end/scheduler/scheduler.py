@@ -22,11 +22,15 @@ def index():
     # TODO don't get old ones
     db = get_db()
     shows = db.execute(
-        "SELECT *"
-        " FROM Shows"
-        " JOIN UserShowsJoin ON UserShowsJoin.user_id = ? and UserShowsJoin.show_id = Shows.id"
-        " ORDER BY created_at DESC"
-        , (g.user["id"],)).fetchall()
+        "SELECT s.id, s.title, s.description, s.created_at, s.updated_at,"
+        " creator.name AS creator, updater.name as updater"
+        " FROM Shows s"
+        " JOIN UserShowsJoin j ON j.show_id = s.id"
+        " JOIN Users creator ON s.created_by = creator.id"
+        " JOIN Users updater on s.updated_by = updater.id"
+        " WHERE j.user_id = ?"
+        " ORDER BY s.created_at DESC",
+        (g.user["id"],)).fetchall()
 
     episodes = []
     for show in shows:
@@ -150,7 +154,7 @@ def create_show():
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
-        co_hosts = request.form.get("co_hosts", None)
+        co_hosts = request.form.get("co_hosts", [])
         error = None
 
         if not title:
