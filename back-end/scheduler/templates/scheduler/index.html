@@ -2,19 +2,17 @@
 
 {% block header %}
 <h1>{% block title %}My Shows and Episodes{% endblock %}</h1>
-{% if g.user %}
 <a class="action" href="{{ url_for('scheduler.create_show') }}">New Show</a>
-{% endif %}
 {% endblock %}
 
 {% block content %}
 {% for show in shows %}
 <article class="show">
   <header>
-    <h1>{{ show['title'] }}</h1>
+    <h2>{{ show['title'] }}</h2>
+    <a class="action" href="{{ url_for('scheduler.create_episode', id=show['id']) }}">New Episode</a>
   </header>
   <p class="body">{{ show['description'] }}</p>
-  <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
   <div class="about">
     <p>
       Created by {{ show['creator'] }} on <span class="create_update_time">{{ show['created_at'].isoformat() }}</span>
@@ -23,6 +21,18 @@
       Updated by {{ show['updater'] }} on <span class="create_update_time">{{ show['updated_at'].isoformat() }}</span>
     </p>
   </div>
+  <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit</a>
+  {% for episode in episodes[show['id']] %}
+  <section class="episode">
+    <h3>{{ episode['title'] }}</h3>
+    <p>
+      {{ episode['description'] }}
+    </p>
+  </section>
+  {% if not loop.last %}
+  <hr>
+  {% endif %}
+  {% endfor %}
 </article>
 {% if not loop.last %}
 <hr>
@@ -32,7 +42,7 @@
 <script type="text/javascript">
   // display created/modified timestamps in user local time
   let dates = document.getElementsByClassName("create_update_time")
-  for (const d of dates) {
+  for (let d of dates) {
       d.textContent = new Date(d.textContent).toString()
   }
 </script>

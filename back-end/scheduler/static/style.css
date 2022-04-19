@@ -10,14 +10,20 @@ body {
   background: white;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: serif;
-  color: #377ba8;
-  margin: 1rem 0;
-}
+/* h1, h2, h3, h4, h5, h6 { */
+/*   font-family: serif; */
+/*   color: #377ba8; */
+/*   margin: 1rem 0; */
+/* } */
 
 a {
   color: #377ba8;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 hr {
@@ -32,15 +38,15 @@ nav {
   padding: 0 0.5rem;
 }
 
-nav h1 {
-  flex: auto;
-  margin: 0;
-}
+/* nav h1 { */
+/*   flex: auto; */
+/*   margin: 0; */
+/* } */
 
-nav h1 a {
-  text-decoration: none;
-  padding: 0.25rem 0.5rem;
-}
+/* nav h1 a { */
+/*   text-decoration: none; */
+/*   padding: 0.25rem 0.5rem; */
+/* } */
 
 nav ul  {
   display: flex;

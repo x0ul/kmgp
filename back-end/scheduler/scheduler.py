@@ -32,9 +32,9 @@ def index():
         " ORDER BY s.created_at DESC",
         (g.user["id"],)).fetchall()
 
-    episodes = []
+    episodes = {}
     for show in shows:
-        episodes = db.execute(
+        episodes[show["id"]] = db.execute(
             "SELECT *"
             " FROM Episodes"
             " WHERE show_id = ?"
@@ -192,10 +192,13 @@ def create_show():
     return render_template("scheduler/create_show.html", djs=djs)
 
 
-@bp.route("/episodes/create", methods=("GET", "POST"))
+@bp.route("/shows/<int:id>/create_episode", methods=("GET", "POST"))
 @login_required
-def create_episode():
+def create_episode(id):
     """Create a new post for the current user."""
+    db = get_db()
+    show = db.execute("SELECT id, title FROM Shows WHERE id = ?", (id,)).fetchone()
+
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
@@ -214,16 +217,15 @@ def create_episode():
         if error is not None:
             flash(error)
         else:
-            db = get_db()
             db.execute(
                 "INSERT INTO Episodes (show_id, title, air_date, url, description, created_by, updated_by)"
                 " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (0, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO show_id, url
+                (id, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO url of audio file
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_episode.html")
+    return render_template("scheduler/create_episode.html", show=show)
 
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
@@ -260,7 +262,6 @@ def update_show(id):
 @bp.route("/episodes/<int:id>/update", methods=("GET", "POST"))
 @login_required
 def update_episode(id):
-    """Update a post if the current user is the author."""
     post = get_episode(id)
 
     if request.method == "POST":

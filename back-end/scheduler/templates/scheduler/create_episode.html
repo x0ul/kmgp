@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}New Episode for TODO Show{% endblock %}</h1>
+  <h1>{% block title %}New Episode for <i>{{ show['title'] }}</i> {% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
   <form method="post">
-    <label for="title">Title</label>
+    <label for="title">Episode Title</label>
     <input name="title" id="title" value="{{ request.form['title'] }}" required>
     <label for="air_date">Air Date</label>
     <input type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
