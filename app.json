@@ -1,0 +1,36 @@
+{
+    "name": "KMGP DJ Scheduler",
+    "description": "A barebones Python app, which can easily be deployed to Heroku.",
+    "image": "heroku/python",
+    "repository": "https://github.com/x0ul/kmgp",
+    "keywords": ["python", "flask" ],
+    "addons": [ "heroku-postgresql" ],
+    "env": {
+        "SECRET_TOKEN": {
+            "description": "The secret used in cookie creation and verification",
+            "generator": "secret"
+        }
+    },
+    "formation": {
+        "web": {
+            "quantity": 1,
+            "size": "free"
+        }
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql"
+        }
+    ],
+    "buildpacks": [
+        "url": "heroku/python"
+    ],
+    "environments": {
+        "test": {
+            "scripts": {
+                "test-setup": "echo 'this should set up tests'",
+                "test": "echo 'this runs tests'"
+            }
+        }
+    }
+}
