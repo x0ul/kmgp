@@ -1,1 +1,1 @@
-web: FLASK_APP=scheduler flask run
+web: gunicorn 'scheduler:create_app()'
