@@ -168,10 +168,8 @@ def create_show():
         else:
             show_id = db.execute(
                 "INSERT INTO Shows (title, description, created_by, updated_by)"
-                " VALUES (?, ?, ?, ?)"
-                " RETURNING id",
-                (title, description, g.user["id"], g.user["id"]),
-            ).fetchone()["id"]
+                " VALUES (?, ?, ?, ?)",
+                (title, description, g.user["id"], g.user["id"])).lastrowid
 
             # add ourselves to the owners join table
             db.execute(
