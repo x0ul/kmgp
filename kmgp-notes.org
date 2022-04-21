@@ -15,13 +15,24 @@
    CLOSED: [2022-04-07 Thu 13:02]
 ** DONE Make subdirs and a few READMEs
    CLOSED: [2022-04-07 Thu 16:44]
-* TODO [1/4] Templated Site Prototype
+* TODO [3/8] Templated Site Prototype
   The idea here is to start with the Flask tutorial and shape it into
   something resembling my internal concept.
 ** DONE Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
    CLOSED: [2022-04-07 Thu 16:44]
-** TODO Modify the tutorial project to make the flaskr posts look more like episodes of a show
-** TODO Group the episodes under shows
+** DONE Modify the tutorial project to make the flaskr posts look more like episodes of a show
+   CLOSED: [2022-04-21 Thu 09:52]
+** DONE Group the episodes under shows
+   CLOSED: [2022-04-21 Thu 09:52]
+** TODO Deploy site
+   - Maybe Heroku? A friend of mine is pretty familiar and I can bug him if there are problems.
+** TODO Fix issues with timestamps
+   - All time should be stored in database/handled as UTC, preferably UNIX epoch seconds
+   - Show air dates must be entered and displayed in America/Los Angeles
+   - The timezone used to display updated/modified timestamps don't matter quite as much. Might as well also use America/Los Angeles.
+** TODO Fix date/time picker
+   - Date picker is actually OK, but time picker should be drop-down hours
+** TODO Rename Shows->Programs and Episodes->Shows to have parity with https://www.space101fm.org/programs and not confuse DJs.
 ** TODO Research audio file uploading, cheap and easy is good.
    - B2? Heard good things wrt "bandwidth alliance"
 
