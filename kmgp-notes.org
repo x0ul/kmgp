@@ -15,7 +15,7 @@
    CLOSED: [2022-04-07 Thu 13:02]
 ** DONE Make subdirs and a few READMEs
    CLOSED: [2022-04-07 Thu 16:44]
-* TODO [3/8] Templated Site Prototype
+* TODO [3/9] Templated Site Prototype
   The idea here is to start with the Flask tutorial and shape it into
   something resembling my internal concept.
 ** DONE Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
@@ -24,6 +24,7 @@
    CLOSED: [2022-04-21 Thu 09:52]
 ** DONE Group the episodes under shows
    CLOSED: [2022-04-21 Thu 09:52]
+** TODO Switch to postgres
 ** TODO Deploy site
    - Maybe Heroku? A friend of mine is pretty familiar and I can bug him if there are problems.
 ** TODO Fix issues with timestamps
