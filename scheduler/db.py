@@ -13,7 +13,7 @@ def get_db():
     again.
     """
     if "db" not in g:
-        g.db = psycopg2.connect("postgres:///kmgp?user=kmgp", cursor_factory=DictCursor)
+        g.db = psycopg2.connect(current_app.config['DATABASE_URL'], cursor_factory=DictCursor)
         print(f"database uri: {current_app.config['DATABASE_URL']}")
     return g.db
 
