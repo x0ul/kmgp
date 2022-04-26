@@ -1,6 +1,7 @@
 import functools
 
 from flask import Blueprint
+from flask import current_app
 from flask import flash
 from flask import g
 from flask import redirect
@@ -21,7 +22,7 @@ def login_required(view):
 
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None:
+        if not g.user:
             return redirect(url_for("auth.login"))
 
         return view(**kwargs)
@@ -35,12 +36,12 @@ def load_logged_in_user():
     the database into ``g.user``."""
     user_id = session.get("user_id")
 
-    if user_id is None:
+    if not user_id:
         g.user = None
     else:
-        g.user = (
-            get_db().execute("SELECT * FROM Users WHERE id = ?", (user_id,)).fetchone()
-        )
+        cur = get_db().cursor()
+        cur.execute("SELECT * FROM Users WHERE id = %s", (user_id,))
+        g.user = cur.fetchone()
 
 
 @bp.route("/register", methods=("GET", "POST"))
@@ -55,6 +56,7 @@ def register():
         name = request.form["name"]
         password = request.form["password"]
         db = get_db()
+        cur = db.cursor()
         error = None
 
         if not email:
@@ -64,17 +66,19 @@ def register():
         elif not password:
             error = "Password is required."
 
-        if error is None:
+        if not error:
             try:
-                db.execute(
-                    "INSERT INTO Users (email, name, password, modified_by) VALUES (?, ?, ?, ?)",
-                    (email, name, generate_password_hash(password), 0),
+                cur.execute(
+                    "INSERT INTO Users (email, name, password) VALUES (%s, %s, %s)",
+                    (email, name, generate_password_hash(password)),
                 )
                 db.commit()
-            except db.IntegrityError:
+            except db.IntegrityError as e:
                 # The email was already used, which caused the
                 # commit to fail. Show a validation error.
-                error = f"User account using {email} is already registered."
+                error = f"User account using {email} is already registered"
+                if current_app.config["DEBUG"]:
+                    error += f": ({e})"
             else:
                 # Success, go to the login page.
                 return redirect(url_for("auth.login"))
@@ -91,15 +95,15 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
         db = get_db()
+        cur = db.cursor()
         error = None
-        user = db.execute(
-            "SELECT * FROM Users WHERE email = ?", (email,)
-        ).fetchone()
+        cur.execute("SELECT * FROM Users WHERE email = %s", (email,))
+        user = cur.fetchone()
 
         if not user or not check_password_hash(user["password"], password):
             error = "Login failed."
 
-        if error is None:
+        if not error:
             # store the user id in a new session and return to the index
             session.clear()
             session["user_id"] = user["id"]

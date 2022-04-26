@@ -21,26 +21,30 @@ def index():
     """Show all the shows and episodes, most recent first."""
     # TODO don't get old ones
     db = get_db()
-    shows = db.execute(
+    cur = db.cursor()
+    cur.execute(
         "SELECT s.id, s.title, s.description, s.created_at, s.updated_at,"
         " creator.name AS creator, updater.name as updater"
         " FROM Shows s"
         " JOIN UserShowsJoin j ON j.show_id = s.id"
         " JOIN Users creator ON s.created_by = creator.id"
         " JOIN Users updater on s.updated_by = updater.id"
-        " WHERE j.user_id = ?"
+        " WHERE j.user_id = %s"
         " ORDER BY s.created_at DESC",
-        (g.user["id"],)).fetchall()
+        (g.user["id"],))
+    shows = cur.fetchall()
 
     episodes = {}
     for show in shows:
-        episodes[show["id"]] = db.execute(
+        cur.execute(
             "SELECT *"
             " FROM Episodes"
-            " WHERE show_id = ?"
+            " WHERE show_id = %s"
             " ORDER BY air_date DESC",
             (show["id"],),
-        ).fetchall()
+        )
+        episodes[show["id"]] = cur.fetchall()
+
 
     return render_template("scheduler/index.html", shows=shows, episodes=episodes)
 
@@ -61,13 +65,13 @@ def get_episode(id):
         .execute(
             "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
             " FROM Episodes e"
-            " WHERE e.id = ?",
+            " WHERE e.id = %s",
             (id,),
         )
         .fetchone()
     )
 
-    if post is None:
+    if not post:
         abort(404, f"Post id {id} doesn't exist.")
 
     if check_author and post["author_id"] != g.user["id"]:
@@ -92,13 +96,13 @@ def get_show(id):
         .execute(
             "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
             " FROM Episodes e"
-            " WHERE e.id = ?",
+            " WHERE e.id = %s",
             (id,),
         )
         .fetchone()
     )
 
-    if post is None:
+    if not post:
         abort(404, f"Post id {id} doesn't exist.")
 
     if check_author and post["author_id"] != g.user["id"]:
@@ -123,13 +127,13 @@ def get_episode(id):
         .execute(
             "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
             " FROM Episodes e"
-            " WHERE e.id = ?",
+            " WHERE e.id = %s",
             (id,),
         )
         .fetchone()
     )
 
-    if post is None:
+    if not post:
         abort(404, f"Post id {id} doesn't exist.")
 
     if check_author and post["author_id"] != g.user["id"]:
@@ -144,12 +148,14 @@ def get_episode(id):
 def create_show():
     """Create a new post for the current user."""
     db = get_db()
+    cur = db.cursor()
     # get all other djs
-    djs = db.execute(
+    cur.execute(
         "SELECT id, name"
         " FROM Users"
-        " WHERE id != ?",
-        (g.user["id"],)).fetchall()
+        " WHERE id != %s",
+        (g.user["id"],))
+    djs = cur.fetchall()
 
     if request.method == "POST":
         title = request.form["title"]
@@ -166,22 +172,26 @@ def create_show():
         if error:
             flash(error)
         else:
-            show_id = db.execute(
+            cur.execute(
                 "INSERT INTO Shows (title, description, created_by, updated_by)"
-                " VALUES (?, ?, ?, ?)",
-                (title, description, g.user["id"], g.user["id"])).lastrowid
+                " VALUES (%s, %s, %s, %s)"
+                " RETURNING id",
+                (title, description, g.user["id"], g.user["id"]))
+            show_id = cur.fetchone()["id"]
+
+            print(f"lastrowid was {show_id}")
 
             # add ourselves to the owners join table
-            db.execute(
+            cur.execute(
                 "INSERT INTO UserShowsJoin (user_id, show_id)"
-                " VALUES (?, ?)",
+                " VALUES (%s, %s)",
                 (g.user["id"], show_id))
 
             # ...and add any co-hosts to the owners join table
             for user in co_hosts:
-                db.execute(
+                cur.execute(
                     "INSERT INTO UserShowsJoin (user_id, show_id)"
-                    " VALUES (?, ?)",
+                    " VALUES (%s, %s)",
                     (user, show_id))
 
             db.commit()
@@ -195,7 +205,9 @@ def create_show():
 def create_episode(id):
     """Create a new post for the current user."""
     db = get_db()
-    show = db.execute("SELECT id, title FROM Shows WHERE id = ?", (id,)).fetchone()
+    cur = db.cursor()
+    cur.execute("SELECT id, title FROM Shows WHERE id = %s", (id,))
+    show = cur.fetchone()
 
     if request.method == "POST":
         title = request.form["title"]
@@ -215,9 +227,9 @@ def create_episode(id):
         if error is not None:
             flash(error)
         else:
-            db.execute(
+            cur.execute(
                 "INSERT INTO Episodes (show_id, title, air_date, url, description, created_by, updated_by)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                " VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (id, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO url of audio file
             )
             db.commit()
@@ -249,7 +261,7 @@ def update_show(id):
         else:
             db = get_db()
             db.execute(
-                "UPDATE post SET title = ?, air_date = ?, description = ? WHERE id = ?", (title, air_date, description, id)
+                "UPDATE post SET title = %s, air_date = %s, description = %s WHERE id = %s", (title, air_date, description, id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
@@ -279,7 +291,7 @@ def update_episode(id):
         else:
             db = get_db()
             db.execute(
-                "UPDATE post SET title = ?, air_date = ?, description = ? WHERE id = ?", (title, air_date, description, id)
+                "UPDATE post SET title = %s, air_date = %s, description = %s fWHERE id = %s", (title, air_date, description, id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
@@ -297,6 +309,6 @@ def delete_episode(id):
     """
     get_episode(id)
     db = get_db()
-    db.execute("DELETE FROM post WHERE id = ?", (id,))
+    db.execute("DELETE FROM post WHERE id = %s", (id,))
     db.commit()
     return redirect(url_for("scheduler.index"))
