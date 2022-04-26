@@ -1,15 +1,25 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Edit "{{ post['title'] }}"{% endblock %}</h1>
+  <h1>{% block title %}Edit "{{ show['title'] }}"{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
   <form method="post">
     <label for="title">Title</label>
-    <input name="title" id="title" value="{{ request.form['title'] or post['title'] }}" required>
+    <input name="title" id="title" value="{{ request.form['title'] or show['title'] }}" required>
+    <label for="co_hosts">Select any Co-Owners of This Show</label>
+    <select multiple name="co_hosts" id="co_hosts">
+      {% for dj in djs %}
+      {% if dj in hosts %}
+      <option value="{{ dj['id'] }}" selected>{{ dj['name'] }}</option>
+      {% else %}
+      <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
     <label for="description">Description</label>
-    <textarea name="description" id="description">{{ request.form['description'] or post['description'] }}</textarea>
+    <textarea name="description" id="description">{{ request.form['description'] or show['description'] }}</textarea>
     <input type="submit" value="Save">
   </form>
 {% endblock %}

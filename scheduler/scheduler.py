@@ -80,6 +80,39 @@ def get_episode(id):
     return post
 
 
+def get_other_djs(my_id):
+    """
+    Return other djs, excluding myself
+    """
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute(
+        "SELECT id, name"
+        " FROM Users"
+        " WHERE id != %s"
+        " ORDER BY name",
+        (g.user["id"],))
+    djs = cur.fetchall()
+
+    return djs
+
+
+def get_hosts(show_id):
+    """
+    Return show hosts.
+    """
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute(
+        "SELECT user_id FROM UserShowsJoin"
+        " WHERE show_id = %s"
+        " ORDER BY name",
+        (show_id,))
+    return cur.fetchall()
+
+
 def get_show(id):
     """Get show by id.
 
@@ -91,24 +124,19 @@ def get_show(id):
     :raise 404: if an episode with the given id doesn't exist
     :raise 403: if the current user isn't an owner
     """
-    post = (
-        get_db()
-        .execute(
-            "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
-            " FROM Episodes e"
-            " WHERE e.id = %s",
-            (id,),
-        )
-        .fetchone()
-    )
+    db = get_db()
+    cur = db.cursor()
+    cur.execute(
+        "SELECT *"
+        " FROM Shows"
+        " WHERE id = %s",
+        (id,))
+    show = cur.fetchone()
 
-    if not post:
-        abort(404, f"Post id {id} doesn't exist.")
+    if not show:
+        abort(404, f"Show id {id} doesn't exist.")
 
-    if check_author and post["author_id"] != g.user["id"]:
-        abort(403)
-
-    return post
+    return show
 
 
 def get_episode(id):
@@ -122,41 +150,26 @@ def get_episode(id):
     :raise 404: if an episode with the given id doesn't exist
     :raise 403: if the current user isn't an owner
     """
-    post = (
-        get_db()
-        .execute(
-            "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
-            " FROM Episodes e"
-            " WHERE e.id = %s",
-            (id,),
-        )
-        .fetchone()
-    )
+    db = get_db()
+    cur = db.cursor()
+    cur.execute(
+        "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
+        " FROM Episodes e"
+        " WHERE e.id = %s",
+        (id,))
 
-    if not post:
-        abort(404, f"Post id {id} doesn't exist.")
+    episode = cur.fetchone()
 
-    if check_author and post["author_id"] != g.user["id"]:
-        abort(403)
+    if not episode:
+        abort(404, f"Episode id {id} doesn't exist.")
 
-    return post
-
+    return episode
 
 
 @bp.route("/shows/create", methods=("GET", "POST"))
 @login_required
 def create_show():
     """Create a new post for the current user."""
-    db = get_db()
-    cur = db.cursor()
-    # get all other djs
-    cur.execute(
-        "SELECT id, name"
-        " FROM Users"
-        " WHERE id != %s",
-        (g.user["id"],))
-    djs = cur.fetchall()
-
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
@@ -172,14 +185,16 @@ def create_show():
         if error:
             flash(error)
         else:
+            db = get_db()
+            cur = db.cursor()
+
+            # create the Shows table entry
             cur.execute(
                 "INSERT INTO Shows (title, description, created_by, updated_by)"
                 " VALUES (%s, %s, %s, %s)"
                 " RETURNING id",
                 (title, description, g.user["id"], g.user["id"]))
             show_id = cur.fetchone()["id"]
-
-            print(f"lastrowid was {show_id}")
 
             # add ourselves to the owners join table
             cur.execute(
@@ -197,6 +212,7 @@ def create_show():
             db.commit()
             return redirect(url_for("scheduler.index"))
 
+    djs = get_other_djs(g.user["id"])
     return render_template("scheduler/create_show.html", djs=djs)
 
 
@@ -242,7 +258,9 @@ def create_episode(id):
 @login_required
 def update_show(id):
     """Update a show."""
-    post = get_episode(id)
+    show = get_show(id)
+    djs = get_other_djs(g.user["id"])
+    hosts = get_hosts(id)
 
     if request.method == "POST":
         title = request.form["title"]
@@ -266,9 +284,10 @@ def update_show(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/update_show.html", post=post)
+    return render_template("scheduler/update_show.html", show=show, djs=djs, hosts=hosts)
 
 
+# TODO the file
 @bp.route("/episodes/<int:id>/update", methods=("GET", "POST"))
 @login_required
 def update_episode(id):
@@ -290,8 +309,12 @@ def update_episode(id):
             flash(error)
         else:
             db = get_db()
-            db.execute(
-                "UPDATE post SET title = %s, air_date = %s, description = %s fWHERE id = %s", (title, air_date, description, id)
+            cur = db.cursor()
+            cur.execute(
+                "UPDATE Episodes"
+                " SET title = %s, air_date = %s, description = %s"
+                " WHERE id = %s",
+                (title, air_date, description, id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
@@ -309,6 +332,7 @@ def delete_episode(id):
     """
     get_episode(id)
     db = get_db()
-    db.execute("DELETE FROM post WHERE id = %s", (id,))
+    cur = db.cursor()
+    cur.execute("DELETE FROM Episodes WHERE id = %s", (id,))
     db.commit()
     return redirect(url_for("scheduler.index"))
