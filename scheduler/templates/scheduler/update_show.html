@@ -8,18 +8,16 @@
   <form method="post">
     <label for="title">Title</label>
     <input name="title" id="title" value="{{ request.form['title'] or show['title'] }}" required>
-    <label for="co_hosts">Select any Co-Owners of This Show</label>
-    <select multiple name="co_hosts" id="co_hosts">
-      {% for dj in djs %}
-      {% if dj in hosts %}
-      <option value="{{ dj['id'] }}" selected>{{ dj['name'] }}</option>
-      {% else %}
-      <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
-      {% endif %}
-      {% endfor %}
-    </select>
+    <label for="air_date">Air Date</label>
+    <input type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] or show['air_date'] }}" required>
+    <label for="audio_file">Show Audio File</label>
+    <input type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
     <label for="description">Description</label>
     <textarea name="description" id="description">{{ request.form['description'] or show['description'] }}</textarea>
     <input type="submit" value="Save">
+  </form>
+  <hr>
+  <form action="{{ url_for('scheduler.delete_show', id=show['id']) }}" method="post">
+    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
   </form>
 {% endblock %}

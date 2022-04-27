@@ -1,19 +1,17 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}New Show{% endblock %}</h1>
+  <h1>{% block title %}New Show for <i>{{ program['title'] }}</i> {% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
   <form method="post">
-    <label for="title">Title</label>
+    <label for="title">Show Title</label>
     <input name="title" id="title" value="{{ request.form['title'] }}" required>
-    <label for="co_hosts">Select any Co-Owners of This Show</label>
-    <select multiple name="co_hosts" id="co_hosts">
-      {% for dj in djs %}
-      <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
-      {% endfor %}
-    </select>
+    <label for="air_date">Air Date</label>
+    <input type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
+    <label for="audio_file">Show Audio File</label>
+    <input type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
     <label for="description">Description</label>
     <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
     <input type="submit" value="Save">
