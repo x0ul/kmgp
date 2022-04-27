@@ -6,8 +6,7 @@
   If I later decide to do futher refine, I'll implement the data in
   the templates as an api and use something like React to query it.
 
-* DONE Bootstrap the Basics
-  CLOSED: [2022-04-07 Thu 16:45]
+* Bootstrap the Basics [3/3]
 ** DONE Start this org file full of TODOs to have some goals for the project
    CLOSED: [2022-04-07 Thu 16:45]
 ** DONE Create a github project and start working in it
@@ -15,7 +14,8 @@
    CLOSED: [2022-04-07 Thu 13:02]
 ** DONE Make subdirs and a few READMEs
    CLOSED: [2022-04-07 Thu 16:44]
-* TODO [3/9] Templated Site Prototype
+
+* Templated Site Prototype [5/6]
   The idea here is to start with the Flask tutorial and shape it into
   something resembling my internal concept.
 ** DONE Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
@@ -24,9 +24,15 @@
    CLOSED: [2022-04-21 Thu 09:52]
 ** DONE Group the episodes under shows
    CLOSED: [2022-04-21 Thu 09:52]
-** TODO Switch to postgres
-** TODO Deploy site
+** DONE Switch to postgres
+   CLOSED: [2022-04-27 Wed 16:05]
+** DONE Deploy site
+   CLOSED: [2022-04-27 Wed 16:05]
    - Maybe Heroku? A friend of mine is pretty familiar and I can bug him if there are problems.
+** TODO Research audio file uploading, cheap and easy is good.
+   - B2? Heard good things wrt "bandwidth alliance"
+
+* Bug fixes [0/3]
 ** TODO Fix issues with timestamps
    - All time should be stored in database/handled as UTC, preferably UNIX epoch seconds
    - Show air dates must be entered and displayed in America/Los Angeles
@@ -34,8 +40,11 @@
 ** TODO Fix date/time picker
    - Date picker is actually OK, but time picker should be drop-down hours
 ** TODO Rename Shows->Programs and Episodes->Shows to have parity with https://www.space101fm.org/programs and not confuse DJs.
-** TODO Research audio file uploading, cheap and easy is good.
-   - B2? Heard good things wrt "bandwidth alliance"
 
-* TODO [0/1] Station Computer Puller Script
-** TODO Learn enough about Windows dev to choose a language
+* Station Computer Puller Script [1/4]
+** DONE Learn enough about Windows dev to choose a language
+   CLOSED: [2022-04-27 Wed 16:08]
+   - Use python!
+** TODO Create a repo and a package
+** TODO Implement querying web backend for upcoming shows
+** TODO Implement downloading and renaming
