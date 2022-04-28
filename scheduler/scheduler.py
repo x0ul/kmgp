@@ -107,8 +107,7 @@ def get_hosts(program_id):
 
     cur.execute(
         "SELECT user_id FROM UserProgramsJoin"
-        " WHERE program_id = %s"
-        " ORDER BY name",
+        " WHERE program_id = %s",
         (program_id,))
     return cur.fetchall()
 
