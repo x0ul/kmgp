@@ -1,2 +1,4 @@
-/back-end/scheduler/__pycache__/
-/back-end/instance/scheduler.sqlite
+.env
+/scheduler/__pycache__/
+/instance/scheduler.sqlite
+
