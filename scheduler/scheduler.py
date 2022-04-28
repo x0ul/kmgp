@@ -37,9 +37,12 @@ def index():
     shows = {}
     for program in programs:
         cur.execute(
-            "SELECT *"
-            " FROM Shows"
-            " WHERE program_id = %s"
+            "SELECT s.id, s.title, s.air_date, s.description, s.created_at, s.updated_at,"
+            " creator.name as creator, updater.name as updater"
+            " FROM Shows s"
+            " JOIN Users creator ON s.created_by = creator.id"
+            " JOIN Users updater on s.updated_by = updater.id"
+            " WHERE s.program_id = %s"
             " ORDER BY air_date DESC",
             (program["id"],),
         )
