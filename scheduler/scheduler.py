@@ -264,11 +264,7 @@ def update_program(id):
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
-        air_date = request.form["air_date"]
-        audio_file = request.form["audio_file"]
         error = None
-
-        air_date = datetime.strptime(air_date, "%Y-%m-%dT%H:%M")
 
         if not title:
             error = "Title is required."
@@ -277,8 +273,9 @@ def update_program(id):
             flash(error)
         else:
             db = get_db()
-            db.execute(
-                "UPDATE post SET title = %s, air_date = %s, description = %s WHERE id = %s", (title, air_date, description, id)
+            cur = db.cursor()
+            cur.execute(
+                "UPDATE Programs SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, id, g.user["id"])
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
