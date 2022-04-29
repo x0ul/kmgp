@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1 class="text-4xl">{% block title %}My Programs and Shows{% endblock %}</h1>
+<h1 class="text-4xl">{% block title %}My Upcoming Shows{% endblock %}</h1>
 <a class="underline text-xs" href="{{ url_for('scheduler.create_program') }}">New Program</a>
 {% endblock %}
 
@@ -18,13 +18,20 @@
     </div>
   </header>
   <p class="text-lg mb-2">{{ program['description'] }}</p>
-  <div class="text-xs text-gray-400 italic">
+  <div class="text-xs text-gray-400 italic mb-4">
     <p>
       Program created by {{ program['creator'] }} on <span class="create_update_time">{{ program['created_at'].isoformat() }}</span>
     </p>
     <p>
       Program updated by {{ program['updater'] }} on <span class="create_update_time">{{ program['updated_at'].isoformat() }}</span>
     </p>
+  </div>
+  <div class="text-2xl italic text-indigo-600">
+    {% if shows[program['id']] %}
+    Upcoming Shows
+    {% else %}
+    No Upcoming Shows Scheduled
+    {% endif %}
   </div>
   {% for show in shows[program['id']] %}
   <section class="px-2 py-4 border">
@@ -43,9 +50,6 @@
       </p>
     </div>
   </section>
-  {% if loop.last %}
-  <hr>
-  {% endif %}
   {% endfor %}
 </article>
 {% endfor %}
