@@ -1,24 +1,30 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - KMGP Show Uploader</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<nav>
-  <h1><a href="{{ url_for('index') }}">KMGP Show Uploader</a></h1>
-  <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li><a href="{{ url_for('auth.register') }}">Register</a>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a>
-    {% endif %}
-  </ul>
-</nav>
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</section>
+<html class="min-h-screen">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title class="flex px-4 py-4">{% block title %}{% endblock %} - KMGP Show Uploader</title>
+  <body class="flex flex-col items-center justify-center">
+    <div class="bg-white drop-shadow-lg">
+      <nav class="px-2 bg-indigo-300 text-indigo-900 flex items-center justify-between">
+        <h1 class="text-xl font-bold italic"><a href="{{ url_for('index') }}">KMGP Show Uploader</a></h1>
+        <ul class="flex flex-row space-x-5">
+          {% if g.user %}
+          <li><span>{{ g.user['id'] }}</span>
+          <li><a class="underline" href="{{ url_for('auth.logout') }}">Log Out</a>
+            {% else %}
+          <li><a class="underline" href="{{ url_for('auth.register') }}">Register</a>
+          <li><a class="underline" href="{{ url_for('auth.login') }}">Log In</a>
+            {% endif %}
+        </ul>
+      </nav>
+      <section>
+        <header class="flex px-4 py-2 items-end justify-between">
+          {% block header %}{% endblock %}
+        </header>
+        {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+      </section>
+    </div>
+  </body>
+</html>

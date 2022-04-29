@@ -4,10 +4,10 @@ html {
   padding: 1rem;
 }
 
-body {
-  max-width: 960px;
-  margin: 0 auto;
-  background: white;
+/* body { */
+/*   max-width: 960px; */
+/*   margin: 0 auto; */
+/*   background: white; */
 }
 
 /* h1, h2, h3, h4, h5, h6 { */
@@ -20,11 +20,11 @@ a {
   color: #377ba8;
 }
 
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+/* header { */
+/*     display: flex; */
+/*     align-items: center; */
+/*     justify-content: space-between; */
+/* } */
 
 hr {
   border: none;
@@ -33,8 +33,8 @@ hr {
 
 nav {
   background: lightgray;
-  display: flex;
-  align-items: center;
+  /* display: flex; */
+  /* align-items: center; */
   padding: 0 0.5rem;
 }
 
@@ -56,8 +56,8 @@ nav ul  {
 }
 
 nav ul li a, nav ul li span, header .action {
-  display: block;
-  padding: 0.5rem;
+  /* display: block; */
+  /* padding: 0.5rem; */
 }
 
 .content {

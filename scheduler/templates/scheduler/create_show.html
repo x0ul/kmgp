@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}New Show for <i>{{ program['title'] }}</i> {% endblock %}</h1>
+<div class="flex text-4xl">{% block title %}New Show for <div class="italic">{{ program['title'] }}</div> {% endblock %}</div>
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="title">Show Title</label>
-    <input name="title" id="title" value="{{ request.form['title'] }}" required>
-    <label for="air_date">Air Date</label>
-    <input type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
-    <label for="audio_file">Show Audio File</label>
-    <input type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
-    <label for="description">Description</label>
-    <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
-    <input type="submit" value="Save">
+  <form class="rounded px-8 pt-6 pb-8 mb-4" method="post">
+    <label class="block font-bold text-lg mb-2" for="title">Show Title</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="audio_file">Show Audio File</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="description">Description</label>
+    <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
+    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save">
   </form>
 {% endblock %}

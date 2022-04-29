@@ -1,38 +1,40 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %}My Programs and Shows{% endblock %}</h1>
-<a class="action" href="{{ url_for('scheduler.create_program') }}">New Program</a>
+<h1 class="text-4xl">{% block title %}My Programs and Shows{% endblock %}</h1>
+<a class="underline text-xs" href="{{ url_for('scheduler.create_program') }}">New Program</a>
 {% endblock %}
 
 {% block content %}
 {% for program in programs %}
-<article class="program">
-  <header>
-    <h2>{{ program['title'] }}</h2>
-    <a class="action" href="{{ url_for('scheduler.update_program', id=program['id']) }}">Edit Program</a>
-    <a class="action" href="{{ url_for('scheduler.create_show', id=program['id']) }}">New Show</a>
+<article class="px-4 py-6 border">
+  <header class="flex items-center justify-between mb-6">
+    <div class="flex items-center">
+      <h2 class="font-bold text-3xl text-indigo-700 mr-1">{{ program['title'] }}</h2>
+      <a class="underline text-xs" href="{{ url_for('scheduler.update_program', id=program['id']) }}">Edit Program</a>
+    </div>
+    <div>
+      <a class="action underline" href="{{ url_for('scheduler.create_show', id=program['id']) }}">New Show</a>
+    </div>
   </header>
-  <p class="body">{{ program['description'] }}</p>
-  <div class="about">
+  <p class="text-lg mb-2">{{ program['description'] }}</p>
+  <div class="text-xs text-gray-400 italic">
     <p>
-      Created by {{ program['creator'] }} on <span class="create_update_time">{{ program['created_at'].isoformat() }}</span>
+      Program created by {{ program['creator'] }} on <span class="create_update_time">{{ program['created_at'].isoformat() }}</span>
     </p>
     <p>
-      Updated by {{ program['updater'] }} on <span class="create_update_time">{{ program['updated_at'].isoformat() }}</span>
+      Program updated by {{ program['updater'] }} on <span class="create_update_time">{{ program['updated_at'].isoformat() }}</span>
     </p>
   </div>
   {% for show in shows[program['id']] %}
-  <section class="show">
-    <header>
-      <h3>{{ show['title'] }}</h3>
-      <a class="action" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit Show</a>
-    </header>
-    <h4>Scheduled to Air <span class="air_date">{{ show['air_date'] }}</span></h4>
-    <p class="body">
-      {{ show['description'] }}
-    </p>
-    <div class="about">
+  <section class="px-2 py-4 border">
+    <div class="flex items-center">
+      <div class="text-3xl text-indigo-600 mr-1">{{ show['title'] }}</div>
+      <a class="underline text-xs" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit Show</a>
+    </div>
+    <div class="text-xl font-bold mb-2">Scheduled to Air <span class="air_date">{{ show['air_date'] }}</span></div>
+    <p class="text-lg mb-2">{{ show['description'] }}</p>
+    <div class="text-xs text-gray-400 italic">
       <p>
         Show created by {{ show['creator'] }} on <span class="create_update_time">{{ show['created_at'].isoformat() }}</span>
       </p>
