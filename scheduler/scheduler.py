@@ -43,6 +43,7 @@ def index():
             " JOIN Users creator ON s.created_by = creator.id"
             " JOIN Users updater on s.updated_by = updater.id"
             " WHERE s.program_id = %s"
+            " AND s.air_date >= CURRENT_TIMESTAMP"
             " ORDER BY air_date DESC",
             (program["id"],),
         )
