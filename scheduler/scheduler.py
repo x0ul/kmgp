@@ -52,37 +52,6 @@ def index():
     return render_template("scheduler/index.html", programs=programs, shows=shows)
 
 
-def get_show(id):
-    """Get an show by id.
-
-    TODO use the join table to check if the current auth'd user is an owner.
-
-    :param id: id of show to get
-    TODO :param check_user: require the current user to be an owner
-    :return: the show
-    :raise 404: if an show with the given id doesn't exist
-    :raise 403: if the current user isn't an owner
-    """
-    post = (
-        get_db()
-        .execute(
-            "SELECT e.id, program_id, air_date, url, created_at, updated_at, description, title"
-            " FROM Shows e"
-            " WHERE e.id = %s",
-            (id,),
-        )
-        .fetchone()
-    )
-
-    if not post:
-        abort(404, f"Post id {id} doesn't exist.")
-
-    if check_author and post["author_id"] != g.user["id"]:
-        abort(403)
-
-    return post
-
-
 def get_other_djs(my_id):
     """
     Return other djs, excluding myself
