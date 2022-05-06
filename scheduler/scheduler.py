@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint
+from flask import current_app
 from flask import flash
 from flask import g
 from flask import redirect
@@ -8,6 +9,9 @@ from flask import render_template
 from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
+
+from b2sdk.v2 import InMemoryAccountInfo
+from b2sdk.session import B2Session
 
 from scheduler.auth import login_required
 from scheduler.db import get_db
@@ -197,6 +201,12 @@ def create_show(id):
     cur.execute("SELECT id, title FROM Programs WHERE id = %s", (id,))
     program = cur.fetchone()
 
+    # Get the upload url for B2 cloud storage
+    info = InMemoryAccountInfo()  # store credentials, tokens and cache in memory
+    session = B2Session(info)
+    session.authorize_account("production", current_app.config["B2_KEY_ID"], current_app.config["B2_KEY"])
+    upload = session.get_upload_url(current_app.config["B2_BUCKET_ID"])
+
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
@@ -223,7 +233,7 @@ def create_show(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_show.html", program=program)
+    return render_template("scheduler/create_show.html", program=program, upload=upload)
 
 
 @bp.route("/programs/<int:id>/update", methods=("GET", "POST"))

@@ -9,5 +9,8 @@ class Config:
     Values set in the .env file will not override env vars.
     """
     load_dotenv()
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    DATABASE_URL = os.environ.get('DATABASE_URL')
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    B2_KEY_ID = os.environ.get("B2_KEY_ID")
+    B2_KEY = os.environ.get("B2_KEY")
+    B2_BUCKET_ID = os.environ.get("B2_BUCKET_ID")
