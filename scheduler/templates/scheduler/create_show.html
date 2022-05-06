@@ -11,9 +11,51 @@
     <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
     <label class="block font-bold text-lg mb-2" for="audio_file">Show Audio File</label>
-    <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
+    <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
+    <p>Progress: <span id="totalProgress"></span></p>
     <label class="block font-bold text-lg mb-2" for="description">Description</label>
     <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
-    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save">
+    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save" onclick="upload()">
   </form>
-{% endblock %}
+
+  <script>
+    async function sha1(data) {
+        const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer))
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+        return hashHex
+    }
+
+    async function upload() {
+        const token = "{{ upload['authorizationToken'] }}"
+        const url = "{{ upload['uploadUrl'] }}"
+
+        const audio_file = document.getElementById('audio_file').files[0]
+        const audio_buf = await audio_file.arrayBuffer()
+        const audio_file_sha1 = await sha1(audio_buf)
+
+        fetch(url, {
+            method: 'POST',
+            body: audio_file,
+            headers: {
+                'Authorization': token,
+                'X-Bz-File-Name': audio_file_sha1,
+                'Content-Type': audio_file.type,
+                'X-Bz-Content-Sha1': audio_file_sha1,
+                'X-Bz-Info-original-filename': encodeURIComponent(audio_file.name),
+                'X-Bz-Info-program-title': encodeURIComponent("{{ program['title'] }}"),
+                'X-Bz-Info-show-title': encodeURIComponent(document.getElementById('title').value),
+                'X-Bz-Info-air-date': encodeURIComponent(document.getElementById('air_date').value),
+                'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
+            },
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Success:', result)
+            })
+            .catch(error => {
+                console.error('Error:', error)
+            })
+    }
+  </script>
+  {% endblock %}
