@@ -15,7 +15,7 @@
 ** DONE Make subdirs and a few READMEs
    CLOSED: [2022-04-07 Thu 16:44]
 
-* Templated Site Prototype [5/6]
+* Templated Site Prototype [6/6]
   The idea here is to start with the Flask tutorial and shape it into
   something resembling my internal concept.
 ** DONE Complete the [[https://flask.palletsprojects.com/en/2.1.x/tutorial/][Flask Tutorial (again)]] and get a working prototype
@@ -29,8 +29,10 @@
 ** DONE Deploy site
    CLOSED: [2022-04-27 Wed 16:05]
    - Maybe Heroku? A friend of mine is pretty familiar and I can bug him if there are problems.
-** TODO Research audio file uploading, cheap and easy is good.
+** DONE Research audio file uploading, cheap and easy is good.
+   CLOSED: [2022-05-16 Mon 23:04]
    - B2? Heard good things wrt "bandwidth alliance"
+   - Yes, went with B2. Still need to get presigned POSTS working.
 
 * Bug fixes [2/7]
 ** TODO Fix issues with timestamps
