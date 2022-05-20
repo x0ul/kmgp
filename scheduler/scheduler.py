@@ -208,10 +208,11 @@ def create_episode(id):
     upload = session.get_upload_url(current_app.config["B2_BUCKET_ID"])
 
     if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        air_date = request.form["air_date"]
-        audio_file = request.form["audio_file"]
+        print(f" this is the request: {request.json}")
+        title = request.json["title"]
+        description = request.json["description"]
+        air_date = request.json["air_date"]
+        audio_file = request.json["audio_file"]
         error = None
 
         # TODO server-side validation of fields

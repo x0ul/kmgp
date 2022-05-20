@@ -16,7 +16,7 @@
     <p>Progress: <span id="totalProgress"></span></p>
     <label class="block font-bold text-lg mb-2" for="description">Description</label>
     <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
-    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save" onclick="upload()">
+    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
 
   <script>
@@ -35,28 +35,44 @@
         const audio_buf = await audio_file.arrayBuffer()
         const audio_file_sha1 = await sha1(audio_buf)
 
-        fetch(url, {
-            method: 'POST',
-            body: audio_file,
-            headers: {
-                'Authorization': token,
-                'X-Bz-File-Name': audio_file_sha1,
-                'Content-Type': audio_file.type,
-                'X-Bz-Content-Sha1': audio_file_sha1,
-                'X-Bz-Info-original-filename': encodeURIComponent(audio_file.name),
-                'X-Bz-Info-show-title': encodeURIComponent("{{ show['title'] }}"),
-                'X-Bz-Info-episode-title': encodeURIComponent(document.getElementById('title').value),
-                'X-Bz-Info-air-date': encodeURIComponent(document.getElementById('air_date').value),
-                'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
-            },
-        })
-            .then(response => response.json())
-            .then(result => {
-                console.log('Success:', result)
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: audio_file,
+                headers: {
+                    'Authorization': token,
+                    'X-Bz-File-Name': audio_file_sha1,
+                    'Content-Type': audio_file.type,
+                    'X-Bz-Content-Sha1': audio_file_sha1,
+                    'X-Bz-Info-original-filename': encodeURIComponent(audio_file.name),
+                    'X-Bz-Info-show-title': encodeURIComponent("{{ show['title'] }}"),
+                    'X-Bz-Info-episode-title': encodeURIComponent(document.getElementById('title').value),
+                    'X-Bz-Info-air-date': encodeURIComponent(document.getElementById('air_date').value),
+                    'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
+                },
             })
-            .catch(error => {
-                console.error('Error:', error)
+            const json = await response.json();
+
+            console.log('Success:', json)
+            console.log('POSTing form...')
+
+            const form_response = await fetch(window.location.href.split('?')[0], {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'title': document.getElementById('title').value,
+                    'air_date': document.getElementById('air_date').value,
+                    'audio_file': 'fake url for now',
+                    'description': document.getElementById('description').value,
+                })
             })
+
+        } catch(err) {
+            console.log(`shit's fucked: ${err}`)
+        }
+
     }
   </script>
   {% endblock %}
