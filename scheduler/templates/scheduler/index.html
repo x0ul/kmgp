@@ -2,7 +2,7 @@
 
 {% block header %}
 <h1 class="text-4xl">{% block title %}My Shows and Episodes{% endblock %}</h1>
-<a class="px-1 py-1 text-gray-700 rounded-full bg-indigo-300 text-xs" href="{{ url_for('scheduler.create_program') }}">New Program</a>
+<a class="px-1 py-1 text-gray-700 rounded-full h-fit bg-indigo-300 text-xs" href="{{ url_for('scheduler.create_program') }}">New Program</a>
 {% endblock %}
 
 {% block content %}
@@ -11,6 +11,7 @@
   <header class="flex items-center justify-between mb-6">
     <div class="flex items-center">
       <h2 class="font-bold text-3xl text-indigo-700 mr-1">{{ program['title'] }}</h2>
+      <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_show', id=program['id']) }}">New Episode</a>
     </div>
   </header>
   <p class="text-lg mb-2">{{ program['description'] }}</p>
@@ -26,12 +27,11 @@
   <div class="my-2 flex justify-between">
     <div class="text-2xl italic text-indigo-600">
       {% if shows[program['id']] %}
-      Upcoming Episodes of {{ program['title'] }}
+      Upcoming Episodes
       {% else %}
       No Upcoming Episodes Scheduled
       {% endif %}
     </div>
-    <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_show', id=program['id']) }}">New Episode</a>
   </div>
   {% for show in shows[program['id']] %}
   <section class="my-2 mx-4 px-2 py-4 border">
