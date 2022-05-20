@@ -11,7 +11,7 @@
   <header class="flex items-center justify-between mb-6">
     <div class="flex items-center">
       <h2 class="font-bold text-3xl text-indigo-700 mr-1">{{ program['title'] }}</h2>
-      <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_show', id=program['id']) }}">New Episode</a>
+      <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_episode', id=program['id']) }}">New Episode</a>
     </div>
   </header>
   <p class="text-lg mb-2">{{ program['description'] }}</p>
@@ -26,27 +26,27 @@
   </div>
   <div class="my-2 flex justify-between">
     <div class="text-2xl italic text-indigo-600">
-      {% if shows[program['id']] %}
+      {% if episodes[program['id']] %}
       Upcoming Episodes
       {% else %}
       No Upcoming Episodes Scheduled
       {% endif %}
     </div>
   </div>
-  {% for show in shows[program['id']] %}
+  {% for episode in episodes[program['id']] %}
   <section class="my-2 mx-4 px-2 py-4 border">
     <div class="flex items-center">
-      <div class="text-3xl text-indigo-600 mr-1">{{ show['title'] }}</div>
+      <div class="text-3xl text-indigo-600 mr-1">{{ episode['title'] }}</div>
     </div>
-    <div class="text-xl font-bold mb-2">Scheduled to Air <span class="air_date">{{ show['air_date'] }}</span></div>
-    <p class="text-lg mb-2">{{ show['description'] }}</p>
-    <a class="underline text-xs place-content-end" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit Show</a>
+    <div class="text-xl font-bold mb-2">Scheduled to Air <span class="air_date">{{ episode['air_date'] }}</span></div>
+    <p class="text-lg mb-2">{{ episode['description'] }}</p>
+    <a class="underline text-xs place-content-end" href="{{ url_for('scheduler.update_episode', id=episode['id']) }}">Edit Episode</a>
     <div class="text-xs text-gray-400 italic">
       <p>
-        Show created by {{ show['creator'] }} on <span class="create_update_time">{{ show['created_at'].isoformat() }}</span>
+        Episode created by {{ episode['creator'] }} on <span class="create_update_time">{{ episode['created_at'].isoformat() }}</span>
       </p>
       <p>
-        Show updated by {{ show['updater'] }} on <span class="create_update_time">{{ show['updated_at'].isoformat() }}</span>
+        Episode updated by {{ episode['updater'] }} on <span class="create_update_time">{{ episode['updated_at'].isoformat() }}</span>
       </p>
     </div>
   </section>

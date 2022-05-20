@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<div class="flex text-4xl">{% block title %}New Show for <div class="italic">{{ program['title'] }}</div> {% endblock %}</div>
+<div class="flex text-4xl">{% block title %}New Episode for <div class="italic">{{ program['title'] }}</div> {% endblock %}</div>
 {% endblock %}
 
 {% block content %}
-  <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_show_form">
-    <label class="block font-bold text-lg mb-2" for="title">Show Title</label>
+  <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_episode_form">
+    <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
     <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
-    <label class="block font-bold text-lg mb-2" for="audio_file">Show Audio File</label>
+    <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
     <p>Progress: <span id="totalProgress"></span></p>
     <label class="block font-bold text-lg mb-2" for="description">Description</label>
@@ -44,7 +44,7 @@
                 'X-Bz-Content-Sha1': audio_file_sha1,
                 'X-Bz-Info-original-filename': encodeURIComponent(audio_file.name),
                 'X-Bz-Info-program-title': encodeURIComponent("{{ program['title'] }}"),
-                'X-Bz-Info-show-title': encodeURIComponent(document.getElementById('title').value),
+                'X-Bz-Info-episode-title': encodeURIComponent(document.getElementById('title').value),
                 'X-Bz-Info-air-date': encodeURIComponent(document.getElementById('air_date').value),
                 'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
             },

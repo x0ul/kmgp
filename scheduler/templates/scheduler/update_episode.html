@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<div class="flex text-4xl">{% block title %}Edit "{{ episode['title'] }}"{% endblock %}</div>
+{% endblock %}
+
+{% block content %}
+  <form class="rounded px-8 pt-6 pb-8 mb-4" method="post">
+    <label class="block font-bold text-lg mb-2" for="title">Title</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] or episode['title'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] or episode['air_date'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" value="{{ request.form['audio_file'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="description">Description</label>
+    <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] or episode['description'] }}</textarea>
+    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save">
+  </form>
+  <hr>
+  <form action="{{ url_for('scheduler.delete_episode', id=episode['id']) }}" method="post">
+    <input class="w-full font-bold text-lg text-red-600 border-2 rounded px-2 py-2" type="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this episode?');">
+  </form>
+{% endblock %}
