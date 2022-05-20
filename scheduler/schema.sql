@@ -2,8 +2,8 @@
 -- Drop any existing data and create empty tables.
 
 DROP TABLE IF EXISTS Users CASCADE;
-DROP TABLE IF EXISTS UserProgramsJoin CASCADE;
-DROP TABLE IF EXISTS Programs CASCADE;
+DROP TABLE IF EXISTS UserShowsJoin CASCADE;
+DROP TABLE IF EXISTS Shows CASCADE;
 DROP TABLE IF EXISTS Episodes CASCADE;
 
 CREATE TABLE Users (
@@ -35,7 +35,7 @@ ON Users
 FOR EACH ROW
 EXECUTE PROCEDURE insert_modified_by_id();
 
-CREATE TABLE Programs (
+CREATE TABLE Shows (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
@@ -47,19 +47,19 @@ CREATE TABLE Programs (
   FOREIGN KEY (updated_by) REFERENCES Users (id)
 );
 
-CREATE TABLE UserProgramsJoin (
+CREATE TABLE UserShowsJoin (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
-  program_id INTEGER NOT NULL,
+  show_id INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES Users (id),
-  FOREIGN KEY (program_id) REFERENCES Programs (id)
+  FOREIGN KEY (show_id) REFERENCES Shows (id)
 );
 
 CREATE TABLE Episodes (
   id SERIAL PRIMARY KEY,
-  program_id INTEGER NOT NULL,
+  show_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   air_date TIMESTAMP NOT NULL,
   url TEXT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Episodes (
   updated_by INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (program_id) REFERENCES Programs (id),
+  FOREIGN KEY (show_id) REFERENCES Shows (id),
   FOREIGN KEY (created_by) REFERENCES Users (id),
   FOREIGN KEY (updated_by) REFERENCES Users (id)
 );

@@ -1,39 +1,39 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1 class="text-4xl">{% block title %}My Shows and Episodes{% endblock %}</h1>
-<a class="px-1 py-1 text-gray-700 rounded-full h-fit bg-indigo-300 text-xs" href="{{ url_for('scheduler.create_program') }}">New Program</a>
+<h1 class="text-4xl text-gray-800">{% block title %}My Shows and Episodes{% endblock %}</h1>
+<a class="px-1 py-1 text-gray-800 rounded-full h-fit bg-indigo-300 text-xs" href="{{ url_for('scheduler.create_show') }}">New Show</a>
 {% endblock %}
 
 {% block content %}
-{% for program in programs %}
-<article class="px-4 py-6 border">
+{% for show in shows %}
+<article class="px-4 py-6 border text-gray-800">
   <header class="flex items-center justify-between mb-6">
     <div class="flex items-center">
-      <h2 class="font-bold text-3xl text-indigo-700 mr-1">{{ program['title'] }}</h2>
-      <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_episode', id=program['id']) }}">New Episode</a>
+      <h2 class="font-bold text-3xl text-indigo-700 mr-1">{{ show['title'] }}</h2>
+      <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_episode', id=show['id']) }}">New Episode</a>
     </div>
   </header>
-  <p class="text-lg mb-2">{{ program['description'] }}</p>
-  <a class="underline text-xs" href="{{ url_for('scheduler.update_program', id=program['id']) }}">Edit Program</a>
+  <p class="text-lg mb-2">{{ show['description'] }}</p>
+  <a class="underline text-xs" href="{{ url_for('scheduler.update_show', id=show['id']) }}">Edit Show</a>
   <div class="text-xs text-gray-400 italic mb-4">
     <p>
-      Program created by {{ program['creator'] }} on <span class="create_update_time">{{ program['created_at'].isoformat() }}</span>
+      Show created by {{ show['creator'] }} on <span class="create_update_time">{{ show['created_at'].isoformat() }}</span>
     </p>
     <p>
-      Program updated by {{ program['updater'] }} on <span class="create_update_time">{{ program['updated_at'].isoformat() }}</span>
+      Show updated by {{ show['updater'] }} on <span class="create_update_time">{{ show['updated_at'].isoformat() }}</span>
     </p>
   </div>
   <div class="my-2 flex justify-between">
     <div class="text-2xl italic text-indigo-600">
-      {% if episodes[program['id']] %}
+      {% if episodes[show['id']] %}
       Upcoming Episodes
       {% else %}
       No Upcoming Episodes Scheduled
       {% endif %}
     </div>
   </div>
-  {% for episode in episodes[program['id']] %}
+  {% for episode in episodes[show['id']] %}
   <section class="my-2 mx-4 px-2 py-4 border">
     <div class="flex items-center">
       <div class="text-3xl text-indigo-600 mr-1">{{ episode['title'] }}</div>

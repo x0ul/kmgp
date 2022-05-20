@@ -22,39 +22,39 @@ bp = Blueprint("scheduler", __name__)
 @bp.route("/")
 @login_required
 def index():
-    """Show all the programs and episodes, most recent first."""
+    """Show all the shows and episodes, most recent first."""
     # TODO don't get old ones
     db = get_db()
     cur = db.cursor()
     cur.execute(
         "SELECT p.id, p.title, p.description, p.created_at, p.updated_at,"
         " creator.name AS creator, updater.name as updater"
-        " FROM Programs p"
-        " JOIN UserProgramsJoin j ON j.program_id = p.id"
+        " FROM Shows p"
+        " JOIN UserShowsJoin j ON j.show_id = p.id"
         " JOIN Users creator ON p.created_by = creator.id"
         " JOIN Users updater on p.updated_by = updater.id"
         " WHERE j.user_id = %s"
         " ORDER BY p.created_at DESC",
         (g.user["id"],))
-    programs = cur.fetchall()
+    shows = cur.fetchall()
 
     episodes = {}
-    for program in programs:
+    for show in shows:
         cur.execute(
             "SELECT e.id, e.title, e.air_date, e.description, e.created_at, e.updated_at,"
             " creator.name as creator, updater.name as updater"
             " FROM Episodes e"
             " JOIN Users creator ON e.created_by = creator.id"
             " JOIN Users updater on e.updated_by = updater.id"
-            " WHERE e.program_id = %s"
+            " WHERE e.show_id = %s"
             " AND e.air_date >= CURRENT_TIMESTAMP"
             " ORDER BY air_date DESC",
-            (program["id"],),
+            (show["id"],),
         )
-        episodes[program["id"]] = cur.fetchall()
+        episodes[show["id"]] = cur.fetchall()
 
 
-    return render_template("scheduler/index.html", programs=programs, episodes=episodes)
+    return render_template("scheduler/index.html", shows=shows, episodes=episodes)
 
 
 def get_other_djs(my_id):
@@ -75,44 +75,44 @@ def get_other_djs(my_id):
     return djs
 
 
-def get_hosts(program_id):
+def get_hosts(show_id):
     """
-    Return program hosts.
+    Return show hosts.
     """
     db = get_db()
     cur = db.cursor()
 
     cur.execute(
-        "SELECT user_id FROM UserProgramsJoin"
-        " WHERE program_id = %s",
-        (program_id,))
+        "SELECT user_id FROM UserShowsJoin"
+        " WHERE show_id = %s",
+        (show_id,))
     return cur.fetchall()
 
 
-def get_program(id):
-    """Get program by id.
+def get_show(id):
+    """Get show by id.
 
     TODO use the join table to check if the current auth'd user is an owner.
 
-    :param id: id of program to get
+    :param id: id of show to get
     TODO :param check_user: require the current user to be an owner
-    :return: the program
-    :raise 404: if an program with the given id doesn't exist
+    :return: the show
+    :raise 404: if an show with the given id doesn't exist
     :raise 403: if the current user isn't an owner
     """
     db = get_db()
     cur = db.cursor()
     cur.execute(
         "SELECT *"
-        " FROM Programs"
+        " FROM Shows"
         " WHERE id = %s",
         (id,))
-    program = cur.fetchone()
+    show = cur.fetchone()
 
-    if not program:
-        abort(404, f"Program id {id} doesn't exist.")
+    if not show:
+        abort(404, f"Show id {id} doesn't exist.")
 
-    return program
+    return show
 
 
 def get_episode(id):
@@ -129,7 +129,7 @@ def get_episode(id):
     db = get_db()
     cur = db.cursor()
     cur.execute(
-        "SELECT e.id, program_id, air_date, url, created_at, updated_at, description, title"
+        "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
         " FROM Episodes e"
         " WHERE e.id = %s",
         (id,))
@@ -142,9 +142,9 @@ def get_episode(id):
     return episode
 
 
-@bp.route("/programs/create", methods=("GET", "POST"))
+@bp.route("/shows/create", methods=("GET", "POST"))
 @login_required
-def create_program():
+def create_show():
     """Create a new post for the current user."""
     if request.method == "POST":
         title = request.form["title"]
@@ -164,42 +164,42 @@ def create_program():
             db = get_db()
             cur = db.cursor()
 
-            # create the Programs table entry
+            # create the Shows table entry
             cur.execute(
-                "INSERT INTO Programs (title, description, created_by, updated_by)"
+                "INSERT INTO Shows (title, description, created_by, updated_by)"
                 " VALUES (%s, %s, %s, %s)"
                 " RETURNING id",
                 (title, description, g.user["id"], g.user["id"]))
-            program_id = cur.fetchone()["id"]
+            show_id = cur.fetchone()["id"]
 
             # add ourselves to the owners join table
             cur.execute(
-                "INSERT INTO UserProgramsJoin (user_id, program_id)"
+                "INSERT INTO UserShowsJoin (user_id, show_id)"
                 " VALUES (%s, %s)",
-                (g.user["id"], program_id))
+                (g.user["id"], show_id))
 
             # ...and add any co-hosts to the owners join table
             for user in co_hosts:
                 cur.execute(
-                    "INSERT INTO UserProgramsJoin (user_id, program_id)"
+                    "INSERT INTO UserShowsJoin (user_id, show_id)"
                     " VALUES (%s, %s)",
-                    (user, program_id))
+                    (user, show_id))
 
             db.commit()
             return redirect(url_for("scheduler.index"))
 
     djs = get_other_djs(g.user["id"])
-    return render_template("scheduler/create_program.html", djs=djs)
+    return render_template("scheduler/create_show.html", djs=djs)
 
 
-@bp.route("/programs/<int:id>/create_episode", methods=("GET", "POST"))
+@bp.route("/shows/<int:id>/create_episode", methods=("GET", "POST"))
 @login_required
 def create_episode(id):
     """Create a new post for the current user."""
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT id, title FROM Programs WHERE id = %s", (id,))
-    program = cur.fetchone()
+    cur.execute("SELECT id, title FROM Shows WHERE id = %s", (id,))
+    show = cur.fetchone()
 
     # Get the upload url for B2 cloud storage
     info = InMemoryAccountInfo()  # store credentials, tokens and cache in memory
@@ -226,21 +226,21 @@ def create_episode(id):
             flash(error)
         else:
             cur.execute(
-                "INSERT INTO Episodes (program_id, title, air_date, url, description, created_by, updated_by)"
+                "INSERT INTO Episodes (show_id, title, air_date, url, description, created_by, updated_by)"
                 " VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (id, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO url of audio file
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_episode.html", program=program, upload=upload)
+    return render_template("scheduler/create_episode.html", show=show, upload=upload)
 
 
-@bp.route("/programs/<int:id>/update", methods=("GET", "POST"))
+@bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
 @login_required
-def update_program(id):
-    """Update a program."""
-    program = get_program(id)
+def update_show(id):
+    """Update a show."""
+    show = get_show(id)
     djs = get_other_djs(g.user["id"])
     hosts = get_hosts(id)
 
@@ -258,12 +258,12 @@ def update_program(id):
             db = get_db()
             cur = db.cursor()
             cur.execute(
-                "UPDATE Programs SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, g.user["id"], id)
+                "UPDATE Shows SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, g.user["id"], id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/update_program.html", program=program, djs=djs, hosts=hosts)
+    return render_template("scheduler/update_show.html", show=show, djs=djs, hosts=hosts)
 
 
 # TODO the file
