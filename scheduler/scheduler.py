@@ -258,7 +258,7 @@ def update_program(id):
             db = get_db()
             cur = db.cursor()
             cur.execute(
-                "UPDATE Programs SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, id, g.user["id"])
+                "UPDATE Programs SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, g.user["id"], id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
