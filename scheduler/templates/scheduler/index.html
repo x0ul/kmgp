@@ -38,7 +38,7 @@
     <div class="flex items-center">
       <div class="text-3xl text-indigo-600 mr-1">{{ episode['title'] }}</div>
     </div>
-    <div class="text-xl font-bold mb-2">Scheduled to Air <span class="air_date">{{ episode['air_date'] }}</span></div>
+    <div class="text-xl font-bold mb-2">Scheduled to Air <span class="air_date">{{ episode['air_date'].strftime('%Y-%m-%d %I:%M %p') }}</span></div>
     <p class="text-lg mb-2">{{ episode['description'] }}</p>
     <a class="underline text-xs place-content-end" href="{{ url_for('scheduler.update_episode', id=episode['id']) }}">Edit Episode</a>
     <div class="text-xs text-gray-400 italic">

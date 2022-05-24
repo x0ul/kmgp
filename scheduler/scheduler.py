@@ -48,10 +48,16 @@ def index():
             " JOIN Users updater on e.updated_by = updater.id"
             " WHERE e.show_id = %s"
             " AND e.air_date >= CURRENT_TIMESTAMP"
-            " ORDER BY air_date DESC",
+            " ORDER BY air_date ASC",
             (show["id"],),
         )
         episodes[show["id"]] = cur.fetchall()
+        #print(f"episodes: {episodes}")
+
+        for episode in episodes[show["id"]]:
+            print(type(episode["air_date"]))
+
+        #     print(f"air_date: {episode['air_date']}")
 
 
     return render_template("scheduler/index.html", shows=shows, episodes=episodes)
@@ -235,7 +241,7 @@ def create_episode(id):
             return redirect(url_for("scheduler.index"))
 
     return render_template("scheduler/create_episode.html", show=show, upload=upload)
-
+2
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
 @login_required
@@ -294,7 +300,7 @@ def update_episode(id):
                 "UPDATE Episodes"
                 " SET title = %s, air_date = %s, description = %s, updated_at = CURRENT_TIMESTAMP, updated_by = %s"
                 " WHERE id = %s",
-                (title, air_date, description, id, g.user["id"])
+                (title, air_date, description, g.user["id"], id)
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
