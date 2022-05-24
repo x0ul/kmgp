@@ -73,6 +73,7 @@
             console.log(`shit's fucked: ${err}`)
         }
 
+        location.href = "{{ url_for('scheduler.index') }}"
     }
   </script>
   {% endblock %}
