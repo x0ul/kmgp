@@ -241,7 +241,7 @@ def create_episode(id):
             return redirect(url_for("scheduler.index"))
 
     return render_template("scheduler/create_episode.html", show=show, upload=upload)
-2
+
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
 @login_required
