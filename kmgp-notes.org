@@ -34,7 +34,7 @@
    - B2? Heard good things wrt "bandwidth alliance"
    - Yes, went with B2. Still need to get presigned POSTS working.
 
-* Bug fixes [2/7]
+* Bug fixes [2/9]
 ** TODO Fix issues with timestamps
    - All time should be stored in database/handled as UTC, preferably UNIX epoch seconds
    - Show air dates must be entered and displayed in America/Los Angeles
@@ -49,6 +49,8 @@
    Sort of done, didn't pay attention to older shows or timezone data. So still needs some work, but in the details.
 ** TODO add a way to browse older shows
 ** TODO properly integrate tailwind css
+** TODO make show titles optional, perhaps below air date if not nil
+** TODO fix heroku crash on create episode
 
 * Station Computer Puller Script [1/4]
 ** DONE Learn enough about Windows dev to choose a language
