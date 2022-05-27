@@ -10,14 +10,37 @@
     <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
     <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
-    <input class="block w-full border-2 px-2 py-2 mb-4" type="datetime-local" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
+    <div class="flex">
+      <input class="block w-full border-2 px-2 py-2 mb-4" type="date" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
+      <select id="hour" name="hour">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
+        <option>11</option>
+        <option selected>12</option>
+      </select>
+      <select id="ampm" name="ampm">
+        <option>AM</option>
+        <option selected>PM</option>
+      </select>
+    </div>
     <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
-    <p>Progress: <span id="totalProgress"></span></p>
     <label class="block font-bold text-lg mb-2" for="description">Description</label>
     <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
     <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
+
+  <div id="loading_indicator" style="display: none;">
+    Loading...
+  </div>
 
   <script>
     async function sha1(data) {
@@ -36,6 +59,7 @@
         const audio_file_sha1 = await sha1(audio_buf)
 
         try {
+            document.querySelector("#loading_indicator").style.display = "block"
             const response = await fetch(url, {
                 method: 'POST',
                 body: audio_file,
@@ -56,6 +80,12 @@
             console.log('Success:', json)
             console.log('POSTing form...')
 
+
+            // TODO fix 24 hour time
+            let hour = Number(document.getElementById('hour').value)
+            let hour_24 = (hour + document.getElementById('ampm').value === "PM" ? 12 : 0) % 24
+            let air_date = document.getElementById('air_date').value + "T" + hour_24 + ":00"
+
             const form_response = await fetch(window.location.href.split('?')[0], {
                 method: 'POST',
                 headers: {
@@ -63,7 +93,7 @@
                 },
                 body: JSON.stringify({
                     'title': document.getElementById('title').value,
-                    'air_date': document.getElementById('air_date').value,
+                    'air_date': air_date,
                     'audio_file': 'fake url for now',
                     'description': document.getElementById('description').value,
                 })
