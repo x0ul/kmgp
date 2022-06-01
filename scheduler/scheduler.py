@@ -153,9 +153,12 @@ def get_episode(id):
 def create_show():
     """Create a new post for the current user."""
     if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        co_hosts = request.form.get("co_hosts", [])
+        title = request.json["title"]
+        description = request.json["description"]
+        co_hosts = request.json["co_hosts"]
+        day_of_week = request.json["day_of_week"]
+        hour = request.json["hour"]
+        print(f"json request: {request.json}")
         error = None
 
         if not title:
