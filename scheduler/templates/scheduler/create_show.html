@@ -1,23 +1,96 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<div class="flex text-4xl text-gray-800">{% block title %}New Show{% endblock %}</div>
+<div class="flex text-4xl text-gray-800 py-2">{% block title %}New Show{% endblock %}</div>
 {% endblock %}
 
 {% block content %}
 <div class="text-gray-800">
-  <form class="rounded px-8 pt-6 pb-8 mb-4" method="post">
+  <form class="rounded px-8 mb-4" method="post">
     <label class="block font-bold text-lg mb-2" for="title">Show Title</label>
-    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
-    <label class="block font-bold text-lg mb-2" for="co_hosts">Select any Co-Owners of This Show</label>
+    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" required>
+    <label class="block font-bold text-lg mb-2" for="day_of_week">Schedule
+      <div class="flex">
+        <select id="day_of_week" name="day_of_week">
+          <option value="1">Mondays</option>
+          <option value="2">Tuesdays</option>
+          <option value="3">Wednesdays</option>
+          <option value="4">Thursdays</option>
+          <option value="5">Fridays</option>
+          <option value="6">Saturdays</option>
+          <option value="0">Sundays</option>
+        </select>
+        <div class="px-2">at</div>
+        <select id="hour" name="hour">
+          <option value="1">1:00</option>
+          <option value="2">2:00</option>
+          <option value="3">3:00</option>
+          <option value="4">4:00</option>
+          <option value="5">5:00</option>
+          <option value="6">6:00</option>
+          <option value="7">7:00</option>
+          <option value="8">8:00</option>
+          <option value="9">9:00</option>
+          <option value="10">10:00</option>
+          <option value="11">11:00</option>
+          <option value="12" selected>12:00</option>
+        </select>
+        <div class="px-2"></div>
+        <select id="ampm" name="ampm">
+          <option>AM</option>
+          <option selected>PM</option>
+        </select>
+      </div>
+    </label>
+    <label class="block font-bold text-lg mb-2" for="co_hosts">Co-Hosts</label>
     <select class="block w-full border-2 px-2 py-2 mb-4" multiple name="co_hosts" id="co_hosts">
       {% for dj in djs %}
       <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
       {% endfor %}
     </select>
-    <label class="block font-bold text-lg mb-2" for="description">Description</label>
+    <label class="block font-bold text-lg mb-2" for="description">Show Description</label>
     <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
-    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save">
+    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
 </div>
+
+<script>
+    async function upload() {
+        function make24(hour, ampm) {
+            if (ampm === "AM") {
+                return hour === 12 ? 0 : hour
+            }
+            else if (ampm === "PM") {
+                return hour === 12 ? 12 : hour + 12
+            }
+            else {
+                console.log(`invalid value for ampm: ${ampm}`)
+            }
+        }
+
+        let hour = Number(document.getElementById('hour').value)
+        let ampm = document.getElementById('ampm').value
+        let hour_24 = make24(hour, ampm)
+        let co_hosts = document.getElementById('co_hosts').selectedOptions
+        let co_hosts_arr = []
+        for (var i = 0; i < co_hosts.length; i++) {
+            co_hosts_arr.push(Number(co_hosts[i].value))
+        }
+
+        const form_response = await fetch(window.location.href.split('?')[0], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'title': document.getElementById('title').value,
+                'co_hosts': co_hosts_arr,
+                'hour': hour_24,
+                'day_of_week': Number(document.getElementById('day_of_week').value),
+                'description': document.getElementById('description').value,
+            })
+        })
+    }
+</script>
+
 {% endblock %}
