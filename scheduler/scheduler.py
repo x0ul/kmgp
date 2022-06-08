@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from flask import Blueprint
 from flask import current_app
@@ -27,14 +28,14 @@ def index():
     db = get_db()
     cur = db.cursor()
     cur.execute(
-        "SELECT p.id, p.title, p.description, p.created_at, p.updated_at,"
+        "SELECT s.id, s.title, s.start_time, s.day_of_week, s.description, s.created_at, s.updated_at,"
         " creator.name AS creator, updater.name as updater"
-        " FROM Shows p"
-        " JOIN UserShowsJoin j ON j.show_id = p.id"
-        " JOIN Users creator ON p.created_by = creator.id"
-        " JOIN Users updater on p.updated_by = updater.id"
+        " FROM Shows s"
+        " JOIN UserShowsJoin j ON j.show_id = s.id"
+        " JOIN Users creator ON s.created_by = creator.id"
+        " JOIN Users updater on s.updated_by = updater.id"
         " WHERE j.user_id = %s"
-        " ORDER BY p.created_at DESC",
+        " ORDER BY s.created_at DESC",
         (g.user["id"],))
     shows = cur.fetchall()
 
@@ -52,15 +53,21 @@ def index():
             (show["id"],),
         )
         episodes[show["id"]] = cur.fetchall()
-        #print(f"episodes: {episodes}")
 
         for episode in episodes[show["id"]]:
             print(type(episode["air_date"]))
 
-        #     print(f"air_date: {episode['air_date']}")
+    weekdays = {
+        0: "Sundays",
+        1: "Mondays",
+        2: "Tuesdays",
+        3: "Wednesdays",
+        4: "Thursdays",
+        5: "Fridays",
+        6: "Saturdays"
+    }
 
-
-    return render_template("scheduler/index.html", shows=shows, episodes=episodes)
+    return render_template("scheduler/index.html", shows=shows, episodes=episodes, weekdays=weekdays)
 
 
 def get_other_djs(my_id):
@@ -135,7 +142,7 @@ def get_episode(id):
     db = get_db()
     cur = db.cursor()
     cur.execute(
-        "SELECT e.id, show_id, air_date, url, created_at, updated_at, description, title"
+        "SELECT *"
         " FROM Episodes e"
         " WHERE e.id = %s",
         (id,))
@@ -151,16 +158,16 @@ def get_episode(id):
 @bp.route("/shows/create", methods=("GET", "POST"))
 @login_required
 def create_show():
-    """Create a new post for the current user."""
+    """Create a new show"""
     if request.method == "POST":
         title = request.json["title"]
         description = request.json["description"]
         co_hosts = request.json["co_hosts"]
         day_of_week = request.json["day_of_week"]
-        hour = request.json["hour"]
-        print(f"json request: {request.json}")
+        start_time = request.json["start_time"]
         error = None
 
+        # TODO check for all required fields
         if not title:
             error = "title is required"
 
@@ -175,10 +182,10 @@ def create_show():
 
             # create the Shows table entry
             cur.execute(
-                "INSERT INTO Shows (title, description, created_by, updated_by)"
-                " VALUES (%s, %s, %s, %s)"
+                "INSERT INTO Shows (title, day_of_week, start_time, description, created_by, updated_by)"
+                " VALUES (%s, %s, %s, %s, %s, %s)"
                 " RETURNING id",
-                (title, description, g.user["id"], g.user["id"]))
+                (title, day_of_week, start_time, description, g.user["id"], g.user["id"]))
             show_id = cur.fetchone()["id"]
 
             # add ourselves to the owners join table
@@ -204,11 +211,17 @@ def create_show():
 @bp.route("/shows/<int:id>/create_episode", methods=("GET", "POST"))
 @login_required
 def create_episode(id):
-    """Create a new post for the current user."""
+    """Create a new episode of show with id `id`"""
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT id, title FROM Shows WHERE id = %s", (id,))
+    cur.execute("SELECT id, title, day_of_week, start_time FROM Shows WHERE id = %s", (id,))
     show = cur.fetchone()
+
+    # local to the station in Seattle
+    now = datetime.now(tz=ZoneInfo("America/Los_Angeles"))
+    days_offset = show["day_of_week"] - now.isoweekday()
+    days_offset = days_offset if days_offset >= 0 else days_offset + 7
+    next_show = now + timedelta(days=days_offset)
 
     # Get the upload url for B2 cloud storage
     info = InMemoryAccountInfo()  # store credentials, tokens and cache in memory
@@ -226,8 +239,9 @@ def create_episode(id):
 
         # TODO server-side validation of fields
 
-        air_date = datetime.strptime(air_date, "%Y-%m-%dT%H:%M")
+        air_date = datetime.strptime(air_date, "%Y-%m-%d")
         print(air_date)
+        # TODO validate air date
 
         if not title:
             error = "Title is required."
@@ -243,7 +257,7 @@ def create_episode(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_episode.html", show=show, upload=upload)
+    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
 
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))

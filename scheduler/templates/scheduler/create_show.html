@@ -18,22 +18,22 @@
           <option value="4">Thursdays</option>
           <option value="5">Fridays</option>
           <option value="6">Saturdays</option>
-          <option value="0">Sundays</option>
+          <option value="7">Sundays</option>
         </select>
         <div class="px-2">at</div>
-        <select id="hour" name="hour">
-          <option value="1">1:00</option>
-          <option value="2">2:00</option>
-          <option value="3">3:00</option>
-          <option value="4">4:00</option>
-          <option value="5">5:00</option>
-          <option value="6">6:00</option>
-          <option value="7">7:00</option>
-          <option value="8">8:00</option>
-          <option value="9">9:00</option>
-          <option value="10">10:00</option>
-          <option value="11">11:00</option>
-          <option value="12" selected>12:00</option>
+        <select id="start_time" name="start_time">
+          <option>1:00</option>
+          <option>2:00</option>
+          <option>3:00</option>
+          <option>4:00</option>
+          <option>5:00</option>
+          <option>6:00</option>
+          <option>7:00</option>
+          <option>8:00</option>
+          <option>9:00</option>
+          <option>10:00</option>
+          <option>11:00</option>
+          <option selected>12:00</option>
         </select>
         <div class="px-2"></div>
         <select id="ampm" name="ampm">
@@ -56,21 +56,8 @@
 
 <script>
     async function upload() {
-        function make24(hour, ampm) {
-            if (ampm === "AM") {
-                return hour === 12 ? 0 : hour
-            }
-            else if (ampm === "PM") {
-                return hour === 12 ? 12 : hour + 12
-            }
-            else {
-                console.log(`invalid value for ampm: ${ampm}`)
-            }
-        }
-
-        let hour = Number(document.getElementById('hour').value)
+        let hour = document.getElementById('start_time').value
         let ampm = document.getElementById('ampm').value
-        let hour_24 = make24(hour, ampm)
         let co_hosts = document.getElementById('co_hosts').selectedOptions
         let co_hosts_arr = []
         for (var i = 0; i < co_hosts.length; i++) {
@@ -85,7 +72,7 @@
             body: JSON.stringify({
                 'title': document.getElementById('title').value,
                 'co_hosts': co_hosts_arr,
-                'hour': hour_24,
+                'start_time': hour + " " + ampm,
                 'day_of_week': Number(document.getElementById('day_of_week').value),
                 'description': document.getElementById('description').value,
             })

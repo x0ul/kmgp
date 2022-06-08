@@ -38,6 +38,8 @@ EXECUTE PROCEDURE insert_modified_by_id();
 CREATE TABLE Shows (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
+  day_of_week INTEGER NOT NULL,
+  start_time TIME WITHOUT TIME ZONE NOT NULL,
   description TEXT NOT NULL,
   created_by INTEGER NOT NULL,
   updated_by INTEGER NOT NULL,

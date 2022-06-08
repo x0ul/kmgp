@@ -5,31 +5,61 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- make date picker in chrome pop open if clicked anywhere, not just little calendar icon -->
+<style>
+  input[type="date"] {
+    position: relative;
+}
+
+/* create a new arrow, because we are going to mess up the native one
+see "List of symbols" below if you want another, you could also try to add a font-awesome icon.. */
+input[type="date"]:after {
+    content: "\25BC";
+    color: #555;
+    padding: 0 5px;
+}
+
+/* change color of symbol on hover */
+input[type="date"]:hover:after {
+    color: #bf1400;
+}
+
+/* make the native arrow invisible and stretch it over the whole field so you can click anywhere in the input field to trigger the native datepicker*/
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+}
+
+/* adjust increase/decrease button */
+input[type="date"]::-webkit-inner-spin-button {
+    z-index: 1;
+}
+
+ /* adjust clear button */
+ input[type="date"]::-webkit-clear-button {
+     z-index: 1;
+ }
+</style>
+
+
 <div class="text-gray-800">
   <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_episode_form">
     <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
     <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
-    <div class="flex">
-      <input class="block w-full border-2 px-2 py-2 mb-4" type="date" name="air_date" id="air_date" value="{{ request.form['air_date'] }}" required>
-      <select id="hour" name="hour">
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        <option>6</option>
-        <option>7</option>
-        <option>8</option>
-        <option>9</option>
-        <option>10</option>
-        <option>11</option>
-        <option selected>12</option>
-      </select>
-      <select id="ampm" name="ampm">
-        <option>AM</option>
-        <option selected>PM</option>
-      </select>
+    <div class="flex items">
+      <input class="block border-2 px-2 py-2 mb-4 mr-2" type="date" name="air_date" id="air_date" min="{{ next_show.strftime('%Y-%m-%d') }}" step="7" required>
+      <div class="font-bold text-xl">
+        at {{ show['start_time'].strftime('%I:%M %p') }}
+      </div>
     </div>
     <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
@@ -59,6 +89,7 @@
         const audio_file_sha1 = await sha1(audio_buf)
 
         try {
+            // TODO loading spinner/bar
             document.querySelector("#loading_indicator").style.display = "block"
             const response = await fetch(url, {
                 method: 'POST',
@@ -80,11 +111,7 @@
             console.log('Success:', json)
             console.log('POSTing form...')
 
-
-            // TODO fix 24 hour time
-            let hour = Number(document.getElementById('hour').value)
-            let hour_24 = (hour + document.getElementById('ampm').value === "PM" ? 12 : 0) % 24
-            let air_date = document.getElementById('air_date').value + "T" + hour_24 + ":00"
+            var air_date = new Date(document.getElementById('air_date').value)
 
             const form_response = await fetch(window.location.href.split('?')[0], {
                 method: 'POST',
