@@ -20,6 +20,16 @@ from scheduler.db import get_db
 bp = Blueprint("scheduler", __name__)
 
 
+WEEKDAYS = {
+    0: "Sundays",
+    1: "Mondays",
+    2: "Tuesdays",
+    3: "Wednesdays",
+    4: "Thursdays",
+    5: "Fridays",
+    6: "Saturdays"
+}
+
 @bp.route("/")
 @login_required
 def index():
@@ -54,20 +64,7 @@ def index():
         )
         episodes[show["id"]] = cur.fetchall()
 
-        for episode in episodes[show["id"]]:
-            print(type(episode["air_date"]))
-
-    weekdays = {
-        0: "Sundays",
-        1: "Mondays",
-        2: "Tuesdays",
-        3: "Wednesdays",
-        4: "Thursdays",
-        5: "Fridays",
-        6: "Saturdays"
-    }
-
-    return render_template("scheduler/index.html", shows=shows, episodes=episodes, weekdays=weekdays)
+    return render_template("scheduler/index.html", shows=shows, episodes=episodes, weekdays=WEEKDAYS)
 
 
 def get_other_djs(my_id):
@@ -167,42 +164,41 @@ def create_show():
         start_time = request.json["start_time"]
         error = None
 
-        # TODO check for all required fields
+        # TODO check for show collisions
         if not title:
-            error = "title is required"
-
+            return ({"error": "title is required"}, 400)
         if not description:
-            error = "description is required"
+            return ({"error": "description is required"}, 400)
 
-        if error:
-            flash(error)
-        else:
-            db = get_db()
-            cur = db.cursor()
+        db = get_db()
+        cur = db.cursor()
 
-            # create the Shows table entry
-            cur.execute(
-                "INSERT INTO Shows (title, day_of_week, start_time, description, created_by, updated_by)"
-                " VALUES (%s, %s, %s, %s, %s, %s)"
-                " RETURNING id",
-                (title, day_of_week, start_time, description, g.user["id"], g.user["id"]))
-            show_id = cur.fetchone()["id"]
+        # create the Shows table entry
+        cur.execute(
+            "INSERT INTO Shows (title, day_of_week, start_time, description, created_by, updated_by)"
+            " VALUES (%s, %s, %s, %s, %s, %s)"
+            " RETURNING id",
+            (title, day_of_week, start_time, description, g.user["id"], g.user["id"]))
+        show_id = cur.fetchone()["id"]
 
-            # add ourselves to the owners join table
+        # add ourselves to the owners join table
+        cur.execute(
+            "INSERT INTO UserShowsJoin (user_id, show_id)"
+            " VALUES (%s, %s)",
+            (g.user["id"], show_id))
+
+        # ...and add any co-hosts to the owners join table
+        for user in co_hosts:
             cur.execute(
                 "INSERT INTO UserShowsJoin (user_id, show_id)"
                 " VALUES (%s, %s)",
-                (g.user["id"], show_id))
+                (user, show_id))
 
-            # ...and add any co-hosts to the owners join table
-            for user in co_hosts:
-                cur.execute(
-                    "INSERT INTO UserShowsJoin (user_id, show_id)"
-                    " VALUES (%s, %s)",
-                    (user, show_id))
-
-            db.commit()
-            return redirect(url_for("scheduler.index"))
+        db.commit()
+        return {
+            "error": error,
+            "redirect": url_for("scheduler.index")
+        }
 
     djs = get_other_djs(g.user["id"])
     return render_template("scheduler/create_show.html", djs=djs)
@@ -230,7 +226,6 @@ def create_episode(id):
     upload = session.get_upload_url(current_app.config["B2_BUCKET_ID"])
 
     if request.method == "POST":
-        print(f" this is the request: {request.json}")
         title = request.json["title"]
         description = request.json["description"]
         air_date = request.json["air_date"]
@@ -240,7 +235,6 @@ def create_episode(id):
         # TODO server-side validation of fields
 
         air_date = datetime.strptime(air_date, "%Y-%m-%d")
-        print(air_date)
         # TODO validate air date
 
         if not title:
@@ -257,7 +251,7 @@ def create_episode(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
+    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload, weekdays=WEEKDAYS)
 
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))

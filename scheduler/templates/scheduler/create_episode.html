@@ -54,21 +54,19 @@ input[type="date"]::-webkit-inner-spin-button {
   <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_episode_form">
     <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
-    <label class="block font-bold text-lg mb-2" for="air_date">Air Date</label>
-    <div class="flex items">
-      <input class="block border-2 px-2 py-2 mb-4 mr-2" type="date" name="air_date" id="air_date" min="{{ next_show.strftime('%Y-%m-%d') }}" step="7" required>
-      <div class="font-bold text-xl">
-        at {{ show['start_time'].strftime('%I:%M %p') }}
-      </div>
-    </div>
+    <label class="block font-bold text-lg mb-2" for="air_date">
+      Air Date
+      ({{ weekdays[show['day_of_week']] }} at {{ show['start_time'].strftime('%I:%M %p') }})
+    </label>
+    <input class="block w-full border-2 px-2 py-2 mb-4 mr-2" type="date" name="air_date" id="air_date" min="{{ next_show.strftime('%Y-%m-%d') }}" step="7" required>
     <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
-    <label class="block font-bold text-lg mb-2" for="description">Description</label>
+    <label class="block font-bold text-lg mb-2" for="description">Description (optional)</label>
     <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
     <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
 
-  <div id="loading_indicator" style="display: none;">
+  <div id="loading_indicator" class="hidden">
     Loading...
   </div>
 

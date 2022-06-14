@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<div class="flex text-4xl text-gray-800 py-2">{% block title %}New Show{% endblock %}</div>
+<div class="flex text-4xl text-gray-800 py-2">
+  {% block title %}Creating a New Show{% endblock %}
+</div>
 {% endblock %}
 
 {% block content %}
+<div id="error_banner" class="font-bold border-4 mx-8 p-2 text-xl bg-red-300 hidden"></div>
 <div class="text-gray-800">
   <form class="rounded px-8 mb-4" method="post">
     <label class="block font-bold text-lg mb-2" for="title">Show Title</label>
-    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" required>
+    <input class="block w-full border-2 p-2 mb-4" name="title" id="title" required>
     <label class="block font-bold text-lg mb-2" for="day_of_week">Schedule
       <div class="flex">
         <select id="day_of_week" name="day_of_week">
@@ -42,15 +45,15 @@
         </select>
       </div>
     </label>
-    <label class="block font-bold text-lg mb-2" for="co_hosts">Co-Hosts</label>
-    <select class="block w-full border-2 px-2 py-2 mb-4" multiple name="co_hosts" id="co_hosts">
+    <label class="block font-bold text-lg mb-2" for="co_hosts">Co-Hosts (if any)</label>
+    <select class="block w-full border-2 p-2 mb-4" multiple name="co_hosts" id="co_hosts">
       {% for dj in djs %}
       <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
       {% endfor %}
     </select>
     <label class="block font-bold text-lg mb-2" for="description">Show Description</label>
-    <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
-    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
+    <textarea class="block w-full border-2 p-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
+    <input class="w-full font-bold text-lg border-2 rounded p-2" type="button" value="Save" onclick="upload()">
   </form>
 </div>
 
@@ -64,7 +67,7 @@
             co_hosts_arr.push(Number(co_hosts[i].value))
         }
 
-        const form_response = await fetch(window.location.href.split('?')[0], {
+        const post = await fetch(window.location.href.split('?')[0], {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -77,6 +80,17 @@
                 'description': document.getElementById('description').value,
             })
         })
+
+        const response = await post.json()
+        if (response.error) {
+            let error_banner = document.getElementById('error_banner')
+            error_banner.innerText = response.error
+            error_banner.style.display = "block"
+        }
+
+        if (response.redirect) {
+            window.location.href = response.redirect
+        }
     }
 </script>
 

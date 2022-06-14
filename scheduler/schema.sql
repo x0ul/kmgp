@@ -65,7 +65,7 @@ CREATE TABLE Episodes (
   title TEXT NOT NULL,
   air_date TIMESTAMP NOT NULL,
   url TEXT NOT NULL,
-  description TEXT NOT NULL,
+  description TEXT,
   created_by INTEGER NOT NULL,
   updated_by INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
