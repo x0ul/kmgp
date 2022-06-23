@@ -118,7 +118,7 @@ input[type="date"]::-webkit-inner-spin-button {
                 },
                 body: JSON.stringify({
                     'title': document.getElementById('title').value,
-                    'air_date': air_date,
+                    'air_date': air_date.getTime() / 1000, // ms -> sec
                     'audio_file': 'fake url for now',
                     'description': document.getElementById('description').value,
                 })

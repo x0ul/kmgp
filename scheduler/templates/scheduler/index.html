@@ -14,7 +14,7 @@
       <a class="ml-8 px-4 py-2 font-semibold text-sm bg-indigo-500 text-white rounded-full shadow-sm" href="{{ url_for('scheduler.create_episode', id=show['id']) }}">New Episode</a>
     </div>
   </header>
-  <div>
+  <div class="font-semibold text-xl italic pb-4">
     {{ weekdays[show['day_of_week']] }} at {{ show['start_time'].strftime('%I:%M %p') }}
   </div>
 

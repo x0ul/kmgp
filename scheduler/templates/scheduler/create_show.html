@@ -45,8 +45,8 @@
         </select>
       </div>
     </label>
-    <label class="block font-bold text-lg mb-2" for="co_hosts">Co-Hosts (if any)</label>
-    <select class="block w-full border-2 p-2 mb-4" multiple name="co_hosts" id="co_hosts">
+    <label class="block font-bold text-lg mb-2" for="djs">DJs (may select multiple)</label>
+    <select class="block w-full border-2 p-2 mb-4" multiple name="djs" id="djs">
       {% for dj in djs %}
       <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
       {% endfor %}
@@ -61,10 +61,10 @@
     async function upload() {
         let hour = document.getElementById('start_time').value
         let ampm = document.getElementById('ampm').value
-        let co_hosts = document.getElementById('co_hosts').selectedOptions
-        let co_hosts_arr = []
-        for (var i = 0; i < co_hosts.length; i++) {
-            co_hosts_arr.push(Number(co_hosts[i].value))
+        let djs = document.getElementById('djs').selectedOptions
+        let djs_arr = []
+        for (var i = 0; i < djs.length; i++) {
+            djs_arr.push(Number(djs[i].value))
         }
 
         const post = await fetch(window.location.href.split('?')[0], {
@@ -74,7 +74,7 @@
             },
             body: JSON.stringify({
                 'title': document.getElementById('title').value,
-                'co_hosts': co_hosts_arr,
+                'djs': djs_arr,
                 'start_time': hour + " " + ampm,
                 'day_of_week': Number(document.getElementById('day_of_week').value),
                 'description': document.getElementById('description').value,

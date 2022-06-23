@@ -67,9 +67,9 @@ def index():
     return render_template("scheduler/index.html", shows=shows, episodes=episodes, weekdays=WEEKDAYS)
 
 
-def get_other_djs(my_id):
+def get_all_djs():
     """
-    Return other djs, excluding myself
+    Return list of known djs.
     """
     db = get_db()
     cur = db.cursor()
@@ -77,17 +77,13 @@ def get_other_djs(my_id):
     cur.execute(
         "SELECT id, name"
         " FROM Users"
-        " WHERE id != %s"
-        " ORDER BY name",
-        (g.user["id"],))
-    djs = cur.fetchall()
-
-    return djs
+        " ORDER BY name")
+    return cur.fetchall()
 
 
-def get_hosts(show_id):
+def get_djs(show_id):
     """
-    Return show hosts.
+    Return show djs.
     """
     db = get_db()
     cur = db.cursor()
@@ -159,16 +155,22 @@ def create_show():
     if request.method == "POST":
         title = request.json["title"]
         description = request.json["description"]
-        co_hosts = request.json["co_hosts"]
+        djs = request.json["djs"]
         day_of_week = request.json["day_of_week"]
         start_time = request.json["start_time"]
         error = None
+        print(request.json)
 
         # TODO check for show collisions
         if not title:
-            return ({"error": "title is required"}, 400)
-        if not description:
-            return ({"error": "description is required"}, 400)
+            error = "title is required"
+        elif not djs:
+            error = "at least one dj is required"
+        elif not description:
+            error = "description is required"
+
+        if error:
+            return ({"error": error}, 400)
 
         db = get_db()
         cur = db.cursor()
@@ -181,14 +183,8 @@ def create_show():
             (title, day_of_week, start_time, description, g.user["id"], g.user["id"]))
         show_id = cur.fetchone()["id"]
 
-        # add ourselves to the owners join table
-        cur.execute(
-            "INSERT INTO UserShowsJoin (user_id, show_id)"
-            " VALUES (%s, %s)",
-            (g.user["id"], show_id))
-
-        # ...and add any co-hosts to the owners join table
-        for user in co_hosts:
+        # add djs to the owners join table
+        for user in djs:
             cur.execute(
                 "INSERT INTO UserShowsJoin (user_id, show_id)"
                 " VALUES (%s, %s)",
@@ -200,7 +196,7 @@ def create_show():
             "redirect": url_for("scheduler.index")
         }
 
-    djs = get_other_djs(g.user["id"])
+    djs = get_all_djs()
     return render_template("scheduler/create_show.html", djs=djs)
 
 
@@ -233,8 +229,9 @@ def create_episode(id):
         error = None
 
         # TODO server-side validation of fields
-
-        air_date = datetime.strptime(air_date, "%Y-%m-%d")
+        print(f"air_date: {air_date}")
+        air_date = datetime.fromtimestamp(air_date)
+        print(f"air_date: {air_date}")
         # TODO validate air date
 
         if not title:
@@ -259,8 +256,11 @@ def create_episode(id):
 def update_show(id):
     """Update a show."""
     show = get_show(id)
-    djs = get_other_djs(g.user["id"])
-    hosts = get_hosts(id)
+    all_djs = get_all_djs()
+    current_djs = get_djs(id)
+
+    print(f"all: {all_djs}")
+    print(f"current: {current_djs}")
 
     if request.method == "POST":
         title = request.form["title"]
@@ -281,7 +281,7 @@ def update_show(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/update_show.html", show=show, djs=djs, hosts=hosts)
+    return render_template("scheduler/update_show.html", show=show, current_djs=current_djs, all_djs=all_djs)
 
 
 # TODO the file
