@@ -104,11 +104,7 @@ input[type="date"]::-webkit-inner-spin-button {
                     'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
                 },
             })
-            const json = await response.json();
-
-            console.log('Success:', json)
-            console.log('POSTing form...')
-
+            const response_json = await response.json();
             var air_date = new Date(document.getElementById('air_date').value)
 
             const form_response = await fetch(window.location.href.split('?')[0], {
@@ -119,13 +115,13 @@ input[type="date"]::-webkit-inner-spin-button {
                 body: JSON.stringify({
                     'title': document.getElementById('title').value,
                     'air_date': air_date.getTime() / 1000, // ms -> sec
-                    'audio_file': 'fake url for now',
+                    'file_id': response_json['fileId'],
                     'description': document.getElementById('description').value,
                 })
             })
 
         } catch(err) {
-            console.log(`shit's fucked: ${err}`)
+            console.log(`error: ${err}`)
         }
 
         location.href = "{{ url_for('scheduler.index') }}"

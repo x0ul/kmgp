@@ -225,7 +225,7 @@ def create_episode(id):
         title = request.json["title"]
         description = request.json["description"]
         air_date = request.json["air_date"]
-        audio_file = request.json["audio_file"]
+        file_id = request.json["file_id"]
         error = None
 
         # TODO server-side validation of fields
@@ -241,9 +241,9 @@ def create_episode(id):
             flash(error)
         else:
             cur.execute(
-                "INSERT INTO Episodes (show_id, title, air_date, url, description, created_by, updated_by)"
+                "INSERT INTO Episodes (show_id, title, air_date, file_id, description, created_by, updated_by)"
                 " VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (id, title, air_date, "http://example.com", description, g.user["id"], g.user["id"]),  # TODO url of audio file
+                (id, title, air_date, file_id, description, g.user["id"], g.user["id"]),
             )
             db.commit()
             return redirect(url_for("scheduler.index"))
