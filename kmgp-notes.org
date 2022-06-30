@@ -34,32 +34,36 @@
    - B2? Heard good things wrt "bandwidth alliance"
    - Yes, went with B2. Still need to get presigned POSTS working.
 
-* Features and Changes [0/3]
-** TODO Lock shows to a scheduled time and date, spec'd in the show, not per episode
+* Features and Changes [1/3]
+** DONE Lock shows to a scheduled time and date, spec'd in the show, not per episode
+   CLOSED: [2022-06-28 Tue 12:21]
 ** TODO Puller download indication on web ui
 ** TODO Admin god mode
 *** TODO Create/edit shows
 *** TODO See all shows and episodes
 *** TODO See when the last episode was scheduled
 
-* Bug fixes [3/11]
+* Bug fixes [6/11]
 ** TODO Fix issues with timestamps
    - All time should be stored in database/handled as UTC, preferably UNIX epoch seconds
    - Show air dates must be entered and displayed in America/Los Angeles
    - The timezone used to display updated/modified timestamps don't matter quite as much. Might as well also use America/Los Angeles.
-** TODO Fix date/time picker
+** DONE Fix date/time picker
+   CLOSED: [2022-06-28 Tue 12:03]
    - Date picker is actually OK, but time picker should be drop-down hours
 ** TODO Don't allow episodes to be scheduled at the same time
-** TODO Don't allow episodes to be scheduled in the past
+** DONE Don't allow episodes to be scheduled in the past
+   CLOSED: [2022-06-28 Tue 12:03]
 ** DONE Rename Shows->Programs and Episodes->Shows to have parity with https://www.space101fm.org/programs and not confuse DJs.
    CLOSED: [2022-04-28 Thu 04:44]
-** TODO make it prettier with css
+** DONE make it prettier with css
+   CLOSED: [2022-06-28 Tue 12:03]
 ** DONE fix index display to show only scheduled upcoming shows, maybe include an "older shows" expansion?
    CLOSED: [2022-05-02 Mon 08:23]
    Sort of done, didn't pay attention to older shows or timezone data. So still needs some work, but in the details.
 ** TODO add a way to browse older shows
 ** TODO properly integrate tailwind css
-** TODO make show titles optional, perhaps below air date if not nil
+** TODO make episode titles optional, perhaps below air date if not nil
 ** DONE fix heroku crash on create episode
    CLOSED: [2022-05-27 Fri 19:16]
    Environment variables got wiped from the Heroku config somehow

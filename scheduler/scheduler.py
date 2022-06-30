@@ -1,10 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
+import json
 
 from flask import Blueprint
 from flask import current_app
 from flask import flash
 from flask import g
+from flask import jsonify
+from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -148,6 +151,48 @@ def get_episode(id):
     return episode
 
 
+@bp.route("/shows")
+def get_shows():
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute(
+        "SELECT id, title, file_path FROM Shows"
+    )
+    cols = [desc[0] for desc in cur.description]
+    vals = cur.fetchall()
+    ret = []
+    for val in vals:
+        ret.append({c: v for c, v in zip(cols, val)})
+
+    return {"shows": ret}
+
+
+@bp.route("/episodes")
+def get_upcoming_episodes():
+    show_id = request.args.get("show_id")
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute(
+        "SELECT id, title, air_date, file_id"
+        " FROM Episodes"
+        " WHERE show_id = %s"
+        " AND air_date > CURRENT_TIMESTAMP",
+        (show_id,)
+    )
+
+    cols = [desc[0] for desc in cur.description]
+    vals = cur.fetchall()
+    ret = []
+    for val in vals:
+        ep = {c: v for c, v in zip(cols, val)}
+        ep["air_date"] = int(ep["air_date"].replace(tzinfo=timezone.utc).timestamp())
+        ret.append(ep)
+
+    return {"show_id": show_id, "episodes": ret}
+
+
 @bp.route("/shows/create", methods=("GET", "POST"))
 @login_required
 def create_show():
@@ -155,11 +200,11 @@ def create_show():
     if request.method == "POST":
         title = request.json["title"]
         description = request.json["description"]
+        file_path = request.json["file_path"]
         djs = request.json["djs"]
         day_of_week = request.json["day_of_week"]
         start_time = request.json["start_time"]
         error = None
-        print(request.json)
 
         # TODO check for show collisions
         if not title:
@@ -177,10 +222,10 @@ def create_show():
 
         # create the Shows table entry
         cur.execute(
-            "INSERT INTO Shows (title, day_of_week, start_time, description, created_by, updated_by)"
-            " VALUES (%s, %s, %s, %s, %s, %s)"
+            "INSERT INTO Shows (title, day_of_week, start_time, description, file_path, created_by, updated_by)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s)"
             " RETURNING id",
-            (title, day_of_week, start_time, description, g.user["id"], g.user["id"]))
+            (title, day_of_week, start_time, description, file_path, g.user["id"], g.user["id"]))
         show_id = cur.fetchone()["id"]
 
         # add djs to the owners join table
@@ -218,7 +263,7 @@ def create_episode(id):
     # Get the upload url for B2 cloud storage
     info = InMemoryAccountInfo()  # store credentials, tokens and cache in memory
     session = B2Session(info)
-    session.authorize_account("production", current_app.config["B2_KEY_ID"], current_app.config["B2_KEY"])
+    session.authorize_account("production", current_app.config["B2_UPLOAD_KEY_ID"], current_app.config["B2_UPLOAD_KEY"])
     upload = session.get_upload_url(current_app.config["B2_BUCKET_ID"])
 
     if request.method == "POST":

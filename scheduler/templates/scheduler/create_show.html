@@ -53,6 +53,8 @@
     </select>
     <label class="block font-bold text-lg mb-2" for="description">Show Description</label>
     <textarea class="block w-full border-2 p-2 mb-4" name="description" id="description">{{ request.form['description'] }}</textarea>
+    <label class="block font-bold text-lg mb-2" for="file_path">Station Playlist File Path (must match Station Playlist settings)</label>
+    <input class="block w-full border-2 p-2 mb-4" name="file_path" id="file_path" required>
     <input class="w-full font-bold text-lg border-2 rounded p-2" type="button" value="Save" onclick="upload()">
   </form>
 </div>
@@ -78,6 +80,7 @@
                 'start_time': hour + " " + ampm,
                 'day_of_week': Number(document.getElementById('day_of_week').value),
                 'description': document.getElementById('description').value,
+                'file_path': document.getElementById('file_path').value,
             })
         })
 

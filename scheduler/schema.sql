@@ -41,6 +41,7 @@ CREATE TABLE Shows (
   day_of_week INTEGER NOT NULL,
   start_time TIME WITHOUT TIME ZONE NOT NULL,
   description TEXT NOT NULL,
+  file_path TEXT NOT NULL,
   created_by INTEGER NOT NULL,
   updated_by INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
