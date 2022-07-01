@@ -1,13 +1,10 @@
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, date, time, timedelta, timezone
 from zoneinfo import ZoneInfo
-import json
 
 from flask import Blueprint
 from flask import current_app
 from flask import flash
 from flask import g
-from flask import jsonify
-from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -269,14 +266,13 @@ def create_episode(id):
     if request.method == "POST":
         title = request.json["title"]
         description = request.json["description"]
-        air_date = request.json["air_date"]
+        air_date = datetime.strptime(request.json["air_date"], "%Y-%m-%d")
         file_id = request.json["file_id"]
         error = None
 
         # TODO server-side validation of fields
-        print(f"air_date: {air_date}")
-        air_date = datetime.fromtimestamp(air_date)
-        print(f"air_date: {air_date}")
+        start_time = show["start_time"]
+        air_date = datetime.combine(air_date, start_time, tzinfo=ZoneInfo("America/Los_Angeles"))
         # TODO validate air date
 
         if not title:
@@ -303,9 +299,6 @@ def update_show(id):
     show = get_show(id)
     all_djs = get_all_djs()
     current_djs = get_djs(id)
-
-    print(f"all: {all_djs}")
-    print(f"current: {current_djs}")
 
     if request.method == "POST":
         title = request.form["title"]
