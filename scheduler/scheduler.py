@@ -17,18 +17,10 @@ from b2sdk.session import B2Session
 from scheduler.auth import login_required
 from scheduler.db import get_db
 
+import psycopg2  # for psycopg2.Error
+
 bp = Blueprint("scheduler", __name__)
 
-
-WEEKDAYS = {
-    0: "Sundays",
-    1: "Mondays",
-    2: "Tuesdays",
-    3: "Wednesdays",
-    4: "Thursdays",
-    5: "Fridays",
-    6: "Saturdays"
-}
 
 @bp.route("/")
 @login_required
@@ -64,7 +56,7 @@ def index():
         )
         episodes[show["id"]] = cur.fetchall()
 
-    return render_template("scheduler/index.html", shows=shows, episodes=episodes, weekdays=WEEKDAYS)
+    return render_template("scheduler/index.html", shows=shows, episodes=episodes)
 
 
 def get_all_djs():
@@ -218,23 +210,28 @@ def create_show():
         cur = db.cursor()
 
         # create the Shows table entry
-        cur.execute(
-            "INSERT INTO Shows (title, day_of_week, start_time, description, file_path, created_by, updated_by)"
-            " VALUES (%s, %s, %s, %s, %s, %s, %s)"
-            " RETURNING id",
-            (title, day_of_week, start_time, description, file_path, g.user["id"], g.user["id"]))
-        show_id = cur.fetchone()["id"]
-
-        # add djs to the owners join table
-        for user in djs:
+        try:
             cur.execute(
-                "INSERT INTO UserShowsJoin (user_id, show_id)"
-                " VALUES (%s, %s)",
-                (user, show_id))
+                "INSERT INTO Shows (title, day_of_week, start_time, description, file_path, created_by, updated_by)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                " RETURNING id",
+                (title, day_of_week, start_time, description, file_path, g.user["id"], g.user["id"]))
+            show_id = cur.fetchone()["id"]
 
-        db.commit()
+            # add djs to the owners join table
+            for user in djs:
+                cur.execute(
+                    "INSERT INTO UserShowsJoin (user_id, show_id)"
+                    " VALUES (%s, %s)",
+                    (user, show_id))
+
+            db.commit()
+        except psycopg2.Error as e:
+            print(e.diag.message_detail)
+            print(e.diag.message_hint)
+            return ({"error": e.diag.message_detail}, 400)
+
         return {
-            "error": error,
             "redirect": url_for("scheduler.index")
         }
 

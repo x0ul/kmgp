@@ -37,10 +37,12 @@ ON Users
 FOR EACH ROW
 EXECUTE PROCEDURE insert_modified_by_id();
 
+CREATE TYPE weekday AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+
 CREATE TABLE Shows (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
-  day_of_week INTEGER NOT NULL,
+  day_of_week weekday NOT NULL,
   start_time TIME WITHOUT TIME ZONE NOT NULL,
   description TEXT NOT NULL,
   file_path TEXT NOT NULL,
@@ -51,6 +53,9 @@ CREATE TABLE Shows (
   FOREIGN KEY (created_by) REFERENCES Users (id),
   FOREIGN KEY (updated_by) REFERENCES Users (id)
 );
+
+-- Prevent shows from being created during the same timeslot
+CREATE UNIQUE INDEX uidx_show_timeslot ON Shows (day_of_week, start_time);
 
 CREATE TABLE UserShowsJoin (
   id SERIAL PRIMARY KEY,
