@@ -202,6 +202,8 @@ def create_show():
             error = "at least one dj is required"
         elif not description:
             error = "description is required"
+        elif not file_path:
+            error = "file path is required"
 
         if error:
             return ({"error": error}, 400)
