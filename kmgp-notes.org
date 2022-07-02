@@ -34,17 +34,20 @@
    - B2? Heard good things wrt "bandwidth alliance"
    - Yes, went with B2. Still need to get presigned POSTS working.
 
-* Features and Changes [1/3]
+* Features and Changes [1/6]
 ** DONE Lock shows to a scheduled time and date, spec'd in the show, not per episode
    CLOSED: [2022-06-28 Tue 12:21]
+** TODO Replace update with delete page
+** TODO Display original file name
 ** TODO Puller download indication on web ui
 ** TODO Admin god mode
 *** TODO Create/edit shows
 *** TODO See all shows and episodes
 *** TODO See when the last episode was scheduled
 
-* Bug fixes [7/12]
-** TODO Fix issues with timestamps
+* Bug fixes [8/13]
+** DONE Fix issues with timestamps
+   CLOSED: [2022-07-02 Sat 13:51]
    - ~All time should be stored in database/handled as UTC, preferably UNIX epoch seconds~ Actually no, use DB time features
    - Show air dates must be entered and displayed in America/Los Angeles
    - The timezone used to display updated/modified timestamps don't matter quite as much. Might as well also use America/Los Angeles.
@@ -62,6 +65,7 @@
 ** DONE fix index display to show only scheduled upcoming shows, maybe include an "older shows" expansion?
    CLOSED: [2022-05-02 Mon 08:23]
    Sort of done, didn't pay attention to older shows or timezone data. So still needs some work, but in the details.
+** TODO Don't allow episodes to be scheduled on top of each other
 ** TODO add a way to browse older shows
 ** TODO properly integrate tailwind css
 ** TODO make episode titles optional, perhaps below air date if not nil
