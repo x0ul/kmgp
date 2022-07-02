@@ -81,7 +81,7 @@ def register():
                     error += f": ({e})"
             else:
                 # Success, go to the login page.
-                return redirect(url_for("auth.login"))
+                return redirect(url_for("scheduler.index"))
 
         flash(error)
 
