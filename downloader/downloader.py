@@ -9,13 +9,16 @@ from dotenv import load_dotenv
 
 
 def b2_download_file(b2_api, b2_file_id, output_filename):
-    pass
-    # b2_api.download_file_by_id(b2_file_id).save_to(output_filename)
+    """
+    Download the file with b2_file_id to output_filename using b2_api.
+    """
+
+    b2_api.download_file_by_id(b2_file_id).save_to(output_filename)
 
 
 def get_shows(url):
     """
-    Get list of shows known to the scheduler back-end
+    Get list of shows from the scheduler back-end at url.
     """
 
     r = requests.get(url)
@@ -27,7 +30,7 @@ def get_shows(url):
         try:
             error = r.json()["error"]
         except BaseException:
-            pass
+            logging.exception("unable to extract 'error' key from response json")
 
         logging.error(f"error in get_shows; http status {r.status_code}, error: {error}")
         return {}
@@ -35,10 +38,10 @@ def get_shows(url):
 
 def get_upcoming_episodes(url, show_id):
     """
-    Get list of upcoming episodes for a given show.
+    Get list of upcoming episodes for a given show_id from scheduler at url.
     """
-    pass
-    r = requests.get(url, params={"show_id": show_id)
+
+    r = requests.get(url, params={"show_id": show_id})
     if r.status_code == 200:
         return r.json()["episodes"]
     else:
@@ -47,14 +50,17 @@ def get_upcoming_episodes(url, show_id):
         try:
             error = r.json()["error"]
         except BaseException:
-            pass
+            logging.exception("unable to extract 'error' key from response json")
 
         logging.error(f"error in get_upcoming_episodes; http status {r.status_code}, error: {error}")
         return {}
 
 
-
 def run_once():
+    """
+    Run one iteration of the episode puller.
+    """
+
     logging.info("starting episode puller")
     load_dotenv()  # loads values from .env file into environment variables
     DOWNLOAD_PATH = os.environ["SHOW_DOWNLOAD_PATH"]
@@ -63,22 +69,21 @@ def run_once():
     GET_SHOWS_URL = os.environ["GET_SHOWS_URL"]
     GET_EPISODES_URL = os.environ["GET_EPISODES_URL"]
 
-    shows = get_shows(GET_SHOWS_URL)
-    print(shows)
-
     info = InMemoryAccountInfo()
     b2_api = B2Api(info)
     b2_api.authorize_account("production", B2_KEY_ID, B2_KEY)
 
+    shows = get_shows(GET_SHOWS_URL)
+
     for show in shows:
         episodes = get_upcoming_episodes(GET_EPISODES_URL, show["id"])
-        show_path = os.path.join(DOWNLOAD_PATH, show["id"])
+        show_path = os.path.join(DOWNLOAD_PATH, str(show["id"]))
         os.makedirs(show_path, exist_ok=True)
 
         # download upcoming episode audio files
         for episode in episodes:
-            episode_path = os.path.join(show_path, episode["id"])
-            # TODO determine if already downloaded
+            episode_path = os.path.join(show_path, str(episode["id"]))
+            # TODO skip if already downloaded
             logging.info(f"downloading [{show['title']}]: [{episode['title']}] to {episode_path}")
             b2_download_file(b2_api, episode["file_id"], episode_path)
             # TODO report back download status
@@ -88,8 +93,8 @@ def run_once():
         if episodes:
             # TODO skip if it's the same file
             next_episode = min(episodes, key=lambda ep: ep["air_date"])
-            next_episode_path = os.path.join(show_path, next_episode["id"])
-            logging.info(f"[{show['title']}]: [{episode['title']}] is next up, copying {next_episode_path} to {show['file_path']}")
+            next_episode_path = os.path.join(show_path, str(next_episode["id"]))
+            logging.info(f"[{show['title']}]:[{next_episode['title']}] is next up, copying '{next_episode_path}' to '{show['file_path']}'")
             shutil.copyfile(next_episode_path, show["file_path"])
             # TODO report back next up status
 
@@ -104,12 +109,9 @@ def run_once():
             if created_at < a_month_ago:
                 os.unlink(f_path)
 
-    # TODO report successful run
+    # TODO report successful run for metrics
 
-# TODO do something with old episode files
-# create/update the symbolic link for each show that points at the next episode
-# report to webapp which episodes were downloaded, which episode is next up to play
-# send logs somewhere
+# TODO send logs somewhere (might be external stuff, idk)
 
 
 if __name__ == "__main__":
