@@ -5,8 +5,8 @@ from flask import Blueprint
 from flask import current_app
 from flask import flash
 from flask import g
-from flask import redirect
 from flask import render_template
+from flask import redirect
 from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
@@ -250,7 +250,16 @@ def create_episode(id):
 
     # local to the station in Seattle
     now = datetime.now(tz=ZoneInfo("America/Los_Angeles"))
-    days_offset = show["day_of_week"] - now.isoweekday()
+    weekday_to_isoweekday = {
+        "Monday": 1,
+        "Tuesday": 2,
+        "Wednesday": 3,
+        "Thursday": 4,
+        "Friday": 5,
+        "Saturday": 6,
+        "Sunday": 7
+    }
+    days_offset = weekday_to_isoweekday[show["day_of_week"]] - now.isoweekday()
     days_offset = days_offset if days_offset >= 0 else days_offset + 7
     next_show = now + timedelta(days=days_offset)
 
@@ -286,7 +295,7 @@ def create_episode(id):
             db.commit()
             return redirect(url_for("scheduler.index"))
 
-    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload, weekdays=WEEKDAYS)
+    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
 
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
