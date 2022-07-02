@@ -332,48 +332,11 @@ def update_show(id):
     return render_template("scheduler/update_show.html", show=show, current_djs=current_djs, all_djs=all_djs)
 
 
-# TODO the file
-@bp.route("/episodes/<int:id>/update", methods=("GET", "POST"))
-@login_required
-def update_episode(id):
-    episode = get_episode(id)
-
-    if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        air_date = request.form["air_date"]
-        audio_file = request.form["audio_file"]
-        error = None
-
-        air_date = datetime.strptime(air_date, "%Y-%m-%dT%H:%M")
-
-        if not title:
-            error = "Title is required."
-
-        if error is not None:
-            flash(error)
-        else:
-            db = get_db()
-            cur = db.cursor()
-            cur.execute(
-                "UPDATE Episodes"
-                " SET title = %s, air_date = %s, description = %s, updated_at = CURRENT_TIMESTAMP, updated_by = %s"
-                " WHERE id = %s",
-                (title, air_date, description, g.user["id"], id)
-            )
-            db.commit()
-            return redirect(url_for("scheduler.index"))
-
-    return render_template("scheduler/update_episode.html", episode=episode)
-
-
 @bp.route("/episodes/<int:id>/delete", methods=("POST",))
 @login_required
 def delete_episode(id):
-    """Delete a post.
-
-    Ensures that the post exists and that the logged in user is the
-    author of the post.
+    """
+    Delete an episode.
     """
     get_episode(id)
     db = get_db()
