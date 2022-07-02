@@ -3,7 +3,6 @@ from zoneinfo import ZoneInfo
 
 from flask import Blueprint
 from flask import current_app
-from flask import flash
 from flask import g
 from flask import render_template
 from flask import redirect
@@ -18,6 +17,7 @@ from scheduler.auth import login_required
 from scheduler.db import get_db
 
 import psycopg2  # for psycopg2.Error
+from psycopg2 import sql
 
 bp = Blueprint("scheduler", __name__)
 
@@ -187,26 +187,21 @@ def get_upcoming_episodes():
 def create_show():
     """Create a new show"""
     if request.method == "POST":
-        title = request.json["title"]
-        description = request.json["description"]
-        file_path = request.json["file_path"]
-        djs = request.json["djs"]
-        day_of_week = request.json["day_of_week"]
-        start_time = request.json["start_time"]
-        error = None
-
-        # TODO check for show collisions
-        if not title:
-            error = "title is required"
-        elif not djs:
-            error = "at least one dj is required"
-        elif not description:
-            error = "description is required"
-        elif not file_path:
-            error = "file path is required"
-
-        if error:
+        post = {}
+        try:
+            post["title"] = request.json["title"]
+            post["day_of_week"] = request.json["day_of_week"]
+            post["start_time"] = request.json["start_time"]
+            post["djs"] = request.json["djs"]
+            post["description"] = request.json["description"]
+            post["file_path"] = request.json["file_path"]
+        except KeyError as e:
+            error = f"{e.args[0].replace('_', ' ')} is required"
             return ({"error": error}, 400)
+        for field, val in post.items():
+            if not val:
+                error = f"{field.replace('_', ' ')} is required"
+                return ({"error": error}, 400)
 
         db = get_db()
         cur = db.cursor()
@@ -214,31 +209,39 @@ def create_show():
         # create the Shows table entry
         try:
             cur.execute(
-                "INSERT INTO Shows (title, day_of_week, start_time, description, file_path, created_by, updated_by)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                " RETURNING id",
-                (title, day_of_week, start_time, description, file_path, g.user["id"], g.user["id"]))
+                """
+                INSERT INTO Shows (title, day_of_week, start_time, description, file_path, created_by, updated_by)
+                VALUES (%(title)s, %(day_of_week)s, %(start_time)s, %(description)s, %(file_path)s, %(user_id)s, %(user_id)s)
+                RETURNING id;
+                """,
+                {"title": post["title"],
+                 "day_of_week": post["day_of_week"],
+                 "start_time": post["start_time"],
+                 "description": post["description"],
+                 "file_path": post["file_path"],
+                 "user_id": g.user["id"]})
             show_id = cur.fetchone()["id"]
 
             # add djs to the owners join table
-            for user in djs:
+            for user in post["djs"]:
                 cur.execute(
-                    "INSERT INTO UserShowsJoin (user_id, show_id)"
-                    " VALUES (%s, %s)",
-                    (user, show_id))
+                    """
+                    INSERT INTO UserShowsJoin (user_id, show_id)
+                    VALUES (%(user_id)s, %(show_id)s);
+                    """,
+                    {"user_id": user,
+                     "show_id": show_id})
 
             db.commit()
-        except psycopg2.Error as e:
-            print(f"constraint name: {e.diag.constraint_name}")
-            # specifically handle timeslot clash error message
+        except psycopg2.errors.UniqueViolation as e:
             if e.diag.constraint_name == "uidx_show_timeslot":
                 return ({"error": "another show already exists in this timeslot"}, 400)
+        except psycopg2.Error as e:
             return ({"error": e.diag.message_detail}, 400)
 
-        return {
-            "redirect": url_for("scheduler.index")
-        }
+        return {"redirect": url_for("scheduler.index")}
 
+    # GET request
     djs = get_all_djs()
     return render_template("scheduler/create_show.html", djs=djs)
 

@@ -72,7 +72,7 @@ CREATE TABLE Episodes (
   id SERIAL PRIMARY KEY,
   show_id INTEGER NOT NULL,
   title TEXT NOT NULL,
-  air_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  air_date TIMESTAMP WITH TIME ZONE UNIQUE NOT NULL,
   file_id TEXT NOT NULL,
   description TEXT,
   created_by INTEGER NOT NULL,
