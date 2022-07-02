@@ -229,8 +229,10 @@ def create_show():
 
             db.commit()
         except psycopg2.Error as e:
-            print(e.diag.message_detail)
-            print(e.diag.message_hint)
+            print(f"constraint name: {e.diag.constraint_name}")
+            # specifically handle timeslot clash error message
+            if e.diag.constraint_name == "uidx_show_timeslot":
+                return ({"error": "another show already exists in this timeslot"}, 400)
             return ({"error": e.diag.message_detail}, 400)
 
         return {
