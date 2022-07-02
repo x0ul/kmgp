@@ -21,9 +21,12 @@ def get_shows(url):
     Get list of shows from the scheduler back-end at url.
     """
 
+    logging.debug(f"getting shows from scheduler @ '{url}'")
     r = requests.get(url)
     if r.status_code == 200:
-        return r.json()["shows"]
+        json = r.json()
+        logging.debug(f"got {len(json['shows'])} shows")
+        return json["shows"]
     else:
         # best effort at logging the error
         error = "unknown"
@@ -41,9 +44,12 @@ def get_upcoming_episodes(url, show_id):
     Get list of upcoming episodes for a given show_id from scheduler at url.
     """
 
+    logging.debug(f"getting episodes for show with id {show_id} from scheduler @ '{url}'")
     r = requests.get(url, params={"show_id": show_id})
     if r.status_code == 200:
-        return r.json()["episodes"]
+        json = r.json()
+        logging.debug(f"got {len(json['episodes'])} episodes for show id {show_id}")
+        return json["episodes"]
     else:
         # best effort at logging the error
         error = "unknown"
@@ -61,6 +67,7 @@ def run_once():
     Run one iteration of the episode puller.
     """
 
+    logging.basicConfig(level=logging.INFO)
     logging.info("starting episode puller")
     load_dotenv()  # loads values from .env file into environment variables
     DOWNLOAD_PATH = os.environ["SHOW_DOWNLOAD_PATH"]
@@ -84,7 +91,7 @@ def run_once():
         for episode in episodes:
             episode_path = os.path.join(show_path, str(episode["id"]))
             # TODO skip if already downloaded
-            logging.info(f"downloading [{show['title']}]: [{episode['title']}] to {episode_path}")
+            logging.info(f"downloading [{show['title']}]:[{episode['title']}] to '{episode_path}'")
             b2_download_file(b2_api, episode["file_id"], episode_path)
             # TODO report back download status
 
@@ -94,20 +101,24 @@ def run_once():
             # TODO skip if it's the same file
             next_episode = min(episodes, key=lambda ep: ep["air_date"])
             next_episode_path = os.path.join(show_path, str(next_episode["id"]))
-            logging.info(f"[{show['title']}]:[{next_episode['title']}] is next up, copying '{next_episode_path}' to '{show['file_path']}'")
+            logging.info(f"[{show['title']}]:[{next_episode['title']}] is scheduled next, copying '{next_episode_path}' to '{show['file_path']}'")
             shutil.copyfile(next_episode_path, show["file_path"])
             # TODO report back next up status
 
     # clean out old files
-    logging.info("deleting old episode files from the download/staging directory")
+    logging.info("cleaning up old files from download directory")
     today = datetime.date.today()
     a_month_ago = today - datetime.timedelta(days=30)
+    num_deleted = 0
     for root, dirs, files in os.walk(DOWNLOAD_PATH):
         for f in files:
             f_path = os.path.join(root, f)
             created_at = datetime.date.fromtimestamp(os.path.getctime(f_path))
             if created_at < a_month_ago:
                 os.unlink(f_path)
+                num_deleted += 1
+
+    logging.info(f"deleted {num_deleted} old episodes")
 
     # TODO report successful run for metrics
 
