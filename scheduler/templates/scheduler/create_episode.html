@@ -58,7 +58,7 @@ input[type="date"]::-webkit-inner-spin-button {
       Air Date
       ({{ show['day_of_week'] }}s at {{ show['start_time'].strftime('%I:%M %p') }})
     </label>
-    <input class="block w-full border-2 px-2 py-2 mb-4 mr-2" type="date" name="air_date" id="air_date" min="{{ next_show.strftime('%Y-%m-%d') }}" step="7" required>
+    <input class="block w-full border-2 px-2 py-2 mb-4 mr-2" type="date" name="air_date" id="air_date" min="{{ next_episode.strftime('%Y-%m-%d') }}" step="7" required>
     <label class="block font-bold text-lg mb-2" for="audio_file">Episode Audio File</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" type="file" id="audio_file" name="audio_file" accept="audio/*" required>
     <label class="block font-bold text-lg mb-2" for="description">Description (optional)</label>

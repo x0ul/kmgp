@@ -271,7 +271,9 @@ def create_episode(id):
     }
     days_offset = weekday_to_isoweekday[show["day_of_week"]] - now.isoweekday()
     days_offset = days_offset if days_offset >= 0 else days_offset + 7
-    next_show = now + timedelta(days=days_offset)
+    next_episode = now + timedelta(days=days_offset)
+    if days_offset == 0 and (now + timedelta(hours=1)).time() > show["start_time"]:  # allow uploads up to one hour before air
+        next_episode += timedelta(days=7)
 
     # Get the upload url for B2 cloud storage
     info = InMemoryAccountInfo()  # store credentials, tokens and cache in memory
@@ -330,7 +332,7 @@ def create_episode(id):
 
         return {"redirect": url_for("scheduler.index")}
 
-    return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
+    return render_template("scheduler/create_episode.html", next_episode=next_episode, show=show, upload=upload)
 
 
 @bp.route("/shows/<int:id>/update", methods=("GET", "POST"))
