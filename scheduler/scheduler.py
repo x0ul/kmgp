@@ -306,21 +306,28 @@ def create_episode(id):
                                     show["start_time"],
                                     tzinfo=ZoneInfo("America/Los_Angeles"))
 
-        cur.execute(
-            """
+        try:
+            cur.execute(
+                """
             INSERT INTO Episodes (show_id, title, air_date, file_id, description, created_by, updated_by)
             VALUES (%(show_id)s, %(title)s, %(air_date)s, %(file_id)s, %(description)s, %(user)s, %(user)s);
             """,
-            {
-                "show_id": id,
-                "title": post["title"],
-                "air_date": air_date,
-                "file_id": post["file_id"],
-                "description": post["description"],
-                "user": g.user["id"]
-            },
-        )
-        db.commit()
+                {
+                    "show_id": id,
+                    "title": post["title"],
+                    "air_date": air_date,
+                    "file_id": post["file_id"],
+                    "description": post["description"],
+                    "user": g.user["id"]
+                },
+            )
+            db.commit()
+        except psycopg2.errors.UniqueViolation as e:
+            if e.diag.constraint_name == "episodes_air_date_key":
+                return ({"error": "another episode already exists in this timeslot"}, 400)
+        except psycopg2.Error as e:
+            return ({"error": e.diag.message_detail}, 400)
+
         return {"redirect": url_for("scheduler.index")}
 
     return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
