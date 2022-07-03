@@ -256,8 +256,7 @@ def create_episode(id):
     """Create a new episode of show with id `id`"""
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT id, title, day_of_week, start_time FROM Shows WHERE id = %s", (id,))
-    show = cur.fetchone()
+    show = get_show(id)
 
     # local to the station in Seattle
     now = datetime.now(tz=ZoneInfo("America/Los_Angeles"))
@@ -281,30 +280,48 @@ def create_episode(id):
     upload = session.get_upload_url(current_app.config["B2_BUCKET_ID"])
 
     if request.method == "POST":
-        title = request.json["title"]
-        description = request.json["description"]
-        air_date = datetime.strptime(request.json["air_date"], "%Y-%m-%d")
-        file_id = request.json["file_id"]
-        error = None
+        post = {}
+        required_fields = ("title", "air_date", "file_id")
+        try:
+            post["title"] = request.json["title"]
+            post["description"] = request.json["description"]
+            post["air_date"] = datetime.strptime(request.json["air_date"], "%Y-%m-%d")
+            post["file_id"] = request.json["file_id"]
+        except KeyError as e:
+            error = f"{e.args[0].replace('_', ' ')} is required"
+            return ({"error": error}, 400)
+        except BaseException as e:
+            return ({"error": str(e)}, 400)
 
-        # TODO server-side validation of fields
-        start_time = show["start_time"]
-        air_date = datetime.combine(air_date, start_time, tzinfo=ZoneInfo("America/Los_Angeles"))
-        # TODO validate air date
+        for field in required_fields:
+            if field not in post:
+                error = f"{field.replace('_', ' ')} is required"
+                return ({"error": error}, 400)
 
-        if not title:
-            error = "Title is required."
+        # validate that air date matches show schedule
+        if weekday_to_isoweekday[show["day_of_week"]] != post["air_date"].isoweekday():
+            return ({"error": "air date does not match schedule"}, 400)
 
-        if error is not None:
-            flash(error)
-        else:
-            cur.execute(
-                "INSERT INTO Episodes (show_id, title, air_date, file_id, description, created_by, updated_by)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (id, title, air_date, file_id, description, g.user["id"], g.user["id"]),
-            )
-            db.commit()
-            return redirect(url_for("scheduler.index"))
+        air_date = datetime.combine(post["air_date"],
+                                    show["start_time"],
+                                    tzinfo=ZoneInfo("America/Los_Angeles"))
+
+        cur.execute(
+            """
+            INSERT INTO Episodes (show_id, title, air_date, file_id, description, created_by, updated_by)
+            VALUES (%(show_id)s, %(title)s, %(air_date)s, %(file_id)s, %(description)s, %(user)s, %(user)s);
+            """,
+            {
+                "show_id": id,
+                "title": post["title"],
+                "air_date": air_date,
+                "file_id": post["file_id"],
+                "description": post["description"],
+                "user": g.user["id"]
+            },
+        )
+        db.commit()
+        return {"redirect": url_for("scheduler.index")}
 
     return render_template("scheduler/create_episode.html", next_show=next_show, show=show, upload=upload)
 
@@ -326,7 +343,7 @@ def update_show(id):
             error = "Title is required."
 
         if error is not None:
-            flash(error)
+            pass
         else:
             db = get_db()
             cur = db.cursor()

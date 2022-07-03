@@ -49,7 +49,7 @@ input[type="date"]::-webkit-inner-spin-button {
  }
 </style>
 
-
+<div id="error_banner" class="font-bold border-4 mx-8 p-2 text-xl bg-red-300 hidden"></div>
 <div class="text-gray-800">
   <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_episode_form">
     <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
@@ -66,7 +66,7 @@ input[type="date"]::-webkit-inner-spin-button {
     <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
 
-  <div id="loading_indicator" class="hidden">
+  <div id="loading_indicator" class="hidden flex justify-center">
     Loading...
   </div>
 
@@ -89,7 +89,7 @@ input[type="date"]::-webkit-inner-spin-button {
         try {
             // TODO loading spinner/bar
             document.querySelector("#loading_indicator").style.display = "block"
-            const response = await fetch(url, {
+            const b2_post = await fetch(url, {
                 method: 'POST',
                 body: audio_file,
                 headers: {
@@ -104,27 +104,35 @@ input[type="date"]::-webkit-inner-spin-button {
                     'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
                 },
             })
-            const response_json = await response.json();
-            var air_date = document.getElementById('air_date').value
+            const b2_response = await b2_post.json();
 
-            const form_response = await fetch(window.location.href.split('?')[0], {
+            const form_post = await fetch(window.location.href.split('?')[0], {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     'title': document.getElementById('title').value,
-                    'air_date': air_date,
-                    'file_id': response_json['fileId'],
+                    'air_date': document.getElementById('air_date').value,
+                    'file_id': b2_response['fileId'],
                     'description': document.getElementById('description').value,
                 })
             })
 
+            const form_response = await form_post.json()
+            if (form_response.error) {
+                let error_banner = document.getElementById('error_banner')
+                error_banner.innerText = form_response.error
+                error_banner.style.display = "block"
+            }
+
+            if (form_response.redirect) {
+                window.location.href = form_response.redirect
+            }
         } catch(err) {
             console.log(`error: ${err}`)
         }
 
-        location.href = "{{ url_for('scheduler.index') }}"
     }
   </script>
   {% endblock %}
