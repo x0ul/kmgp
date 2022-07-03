@@ -214,12 +214,14 @@ def create_show():
                 VALUES (%(title)s, %(day_of_week)s, %(start_time)s, %(description)s, %(file_path)s, %(user_id)s, %(user_id)s)
                 RETURNING id;
                 """,
-                {"title": post["title"],
-                 "day_of_week": post["day_of_week"],
-                 "start_time": post["start_time"],
-                 "description": post["description"],
-                 "file_path": post["file_path"],
-                 "user_id": g.user["id"]})
+                {
+                    "title": post["title"],
+                    "day_of_week": post["day_of_week"],
+                    "start_time": post["start_time"],
+                    "description": post["description"],
+                    "file_path": post["file_path"],
+                    "user_id": g.user["id"]
+                })
             show_id = cur.fetchone()["id"]
 
             # add djs to the owners join table
@@ -229,8 +231,10 @@ def create_show():
                     INSERT INTO UserShowsJoin (user_id, show_id)
                     VALUES (%(user_id)s, %(show_id)s);
                     """,
-                    {"user_id": user,
-                     "show_id": show_id})
+                    {
+                        "user_id": user,
+                        "show_id": show_id
+                    })
 
             db.commit()
         except psycopg2.errors.UniqueViolation as e:
