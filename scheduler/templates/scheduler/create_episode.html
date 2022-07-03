@@ -83,6 +83,12 @@ input[type="date"]::-webkit-inner-spin-button {
         const url = "{{ upload['uploadUrl'] }}"
 
         const audio_file = document.getElementById('audio_file').files[0]
+        if (!audio_file) {
+            let error_banner = document.getElementById('error_banner')
+            error_banner.innerText = "please select an audio file"
+            error_banner.style.display = "block"
+            return
+        }
         const audio_buf = await audio_file.arrayBuffer()
         const audio_file_sha1 = await sha1(audio_buf)
 
