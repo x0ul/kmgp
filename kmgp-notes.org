@@ -45,7 +45,7 @@
 *** TODO See all shows and episodes
 *** TODO See when the last episode was scheduled
 
-* Bug fixes [8/13]
+* Bug fixes [8/14]
 ** DONE Fix issues with timestamps
    CLOSED: [2022-07-02 Sat 13:51]
    - ~All time should be stored in database/handled as UTC, preferably UNIX epoch seconds~ Actually no, use DB time features
@@ -67,6 +67,7 @@
    Sort of done, didn't pay attention to older shows or timezone data. So still needs some work, but in the details.
 ** TODO Don't allow episodes to be scheduled on top of each other
 ** TODO add a way to browse older shows
+** TODO missing audio file in create episode: error not propagating to the ui
 ** TODO properly integrate tailwind css
 ** TODO make episode titles optional, perhaps below air date if not nil
 ** DONE fix heroku crash on create episode
