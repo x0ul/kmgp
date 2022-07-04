@@ -304,10 +304,12 @@ def create_episode(id):
         # validate that air date matches show schedule
         if weekday_to_isoweekday[show["day_of_week"]] != post["air_date"].isoweekday():
             return ({"error": "air date does not match schedule"}, 400)
-
         air_date = datetime.combine(post["air_date"],
                                     show["start_time"],
                                     tzinfo=ZoneInfo("America/Los_Angeles"))
+
+        if air_date < datetime.now(tz=ZoneInfo("America/Los_Angeles")) + timedelta(hours=1):
+            return ({"error": "air date is in the past"}, 400)
 
         try:
             cur.execute(
