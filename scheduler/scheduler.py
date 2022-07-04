@@ -44,7 +44,7 @@ def index():
     episodes = {}
     for show in shows:
         cur.execute(
-            "SELECT e.id, e.title, e.air_date, e.description, e.created_at, e.updated_at,"
+            "SELECT e.id, e.title, e.air_date, e.description, e.original_filename, e.created_at, e.updated_at,"
             " creator.name as creator, updater.name as updater"
             " FROM Episodes e"
             " JOIN Users creator ON e.created_by = creator.id"
@@ -283,12 +283,13 @@ def create_episode(id):
 
     if request.method == "POST":
         post = {}
-        required_fields = ("title", "air_date", "file_id")
+        required_fields = ("title", "air_date", "file_id", "original_filename")
         try:
             post["title"] = request.json["title"]
             post["description"] = request.json["description"]
             post["air_date"] = datetime.strptime(request.json["air_date"], "%Y-%m-%d")
             post["file_id"] = request.json["file_id"]
+            post["original_filename"] = request.json["original_filename"]
         except KeyError as e:
             error = f"{e.args[0].replace('_', ' ')} is required"
             return ({"error": error}, 400)
@@ -311,14 +312,15 @@ def create_episode(id):
         try:
             cur.execute(
                 """
-            INSERT INTO Episodes (show_id, title, air_date, file_id, description, created_by, updated_by)
-            VALUES (%(show_id)s, %(title)s, %(air_date)s, %(file_id)s, %(description)s, %(user)s, %(user)s);
+            INSERT INTO Episodes (show_id, title, air_date, file_id, original_filename, description, created_by, updated_by)
+            VALUES (%(show_id)s, %(title)s, %(air_date)s, %(file_id)s, %(original_filename)s, %(description)s, %(user)s, %(user)s);
             """,
                 {
                     "show_id": id,
                     "title": post["title"],
                     "air_date": air_date,
                     "file_id": post["file_id"],
+                    "original_filename": post["original_filename"],
                     "description": post["description"],
                     "user": g.user["id"]
                 },

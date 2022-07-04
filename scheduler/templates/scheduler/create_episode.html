@@ -52,7 +52,7 @@ input[type="date"]::-webkit-inner-spin-button {
 <div id="error_banner" class="font-bold border-4 mx-8 p-2 text-xl bg-red-300 hidden"></div>
 <div class="text-gray-800">
   <form class="rounded px-8 pt-6 pb-8 mb-4" id="new_episode_form">
-    <label class="block font-bold text-lg mb-2" for="title">Episode Title</label>
+    <label class="block font-bold text-lg mb-2" for="title">Episode Title (Optional)</label>
     <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] }}" required>
     <label class="block font-bold text-lg mb-2" for="air_date">
       Air Date
@@ -121,6 +121,7 @@ input[type="date"]::-webkit-inner-spin-button {
                     'title': document.getElementById('title').value,
                     'air_date': document.getElementById('air_date').value,
                     'file_id': b2_response['fileId'],
+                    'original_filename': audio_file.name,
                     'description': document.getElementById('description').value,
                 })
             })
