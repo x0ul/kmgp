@@ -44,6 +44,7 @@
 *** TODO Create/edit shows
 *** TODO See all shows and episodes
 *** TODO See when the last episode was scheduled
+** TODO Assess whether to stay on Heroku, if not, migrate where?
 
 * Bug fixes [12/16]
 ** DONE Fix issues with timestamps
@@ -80,6 +81,7 @@
 ** TODO Uploader progress bar or at least make the spinner look better
 ** DONE bug: episodes shouldn't be allowed to be scheduled on the same day if the air time has already passed
    CLOSED: [2022-07-03 Sun 13:36]
+
 
 * Station Computer Puller Script [4/4]
 ** DONE Learn enough about Windows dev to choose a language
