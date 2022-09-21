@@ -70,20 +70,23 @@ def get_all_djs():
         "SELECT id, name"
         " FROM Users"
         " ORDER BY name")
+
     return cur.fetchall()
 
 
 def get_djs(show_id):
     """
-    Return show djs.
+    Return djs owning a show
     """
     db = get_db()
     cur = db.cursor()
 
     cur.execute(
-        "SELECT user_id FROM UserShowsJoin"
-        " WHERE show_id = %s",
+        "SELECT u.id, u.name"
+        " FROM Users u"
+        " JOIN UserShowsJoin j ON j.show_id = %s AND j.user_id = u.id",
         (show_id,))
+
     return cur.fetchall()
 
 
@@ -343,28 +346,80 @@ def create_episode(id):
 @login_required
 def update_show(id):
     """Update a show."""
+    if request.method == "POST":
+        post = {}
+        try:
+            post["title"] = request.json["title"]
+            post["day_of_week"] = request.json["day_of_week"]
+            post["start_time"] = request.json["start_time"]
+            post["djs"] = request.json["djs"]
+            post["description"] = request.json["description"]
+            post["file_path"] = request.json["file_path"]
+        except KeyError as e:
+            error = f"{e.args[0].replace('_', ' ')} is required"
+            return ({"error": error}, 400)
+        for field, val in post.items():
+            if not val:
+                error = f"{field.replace('_', ' ')} is required"
+                return ({"error": error}, 400)
+
+        db = get_db()
+        cur = db.cursor()
+
+        # update the Shows table entry
+        try:
+            cur.execute(
+                """
+                UPDATE Shows SET (title, day_of_week, start_time, description, file_path, created_by, updated_by) =
+                (%(title)s, %(day_of_week)s, %(start_time)s, %(description)s, %(file_path)s, %(user_id)s, %(user_id)s)
+                WHERE id = %(id)s
+                RETURNING id;
+                """,
+                {
+                    "id": id,
+                    "title": post["title"],
+                    "day_of_week": post["day_of_week"],
+                    "start_time": post["start_time"],
+                    "description": post["description"],
+                    "file_path": post["file_path"],
+                    "user_id": g.user["id"]
+                })
+            show_id = cur.fetchone()["id"]
+
+            # add djs to the owners join table
+            cur.execute(
+                """
+                DELETE FROM UserShowsJoin
+                WHERE show_id = %(show_id)s;
+                """,
+                {
+                    "show_id": id,
+                })
+
+            for user in post["djs"]:
+                cur.execute(
+                    """
+                    INSERT INTO UserShowsJoin (user_id, show_id)
+                    VALUES (%(user_id)s, %(show_id)s);
+                    """,
+                    {
+                        "user_id": user,
+                        "show_id": show_id
+                    })
+
+            db.commit()
+        except psycopg2.errors.UniqueViolation as e:
+            if e.diag.constraint_name == "uidx_show_timeslot":
+                return ({"error": "another show already exists in this timeslot"}, 400)
+        except psycopg2.Error as e:
+            return ({"error": e.diag.message_detail}, 400)
+
+        return {"redirect": url_for("scheduler.index")}
+
+    # GET request
     show = get_show(id)
     all_djs = get_all_djs()
     current_djs = get_djs(id)
-
-    if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        error = None
-
-        if not title:
-            error = "Title is required."
-
-        if error is not None:
-            pass
-        else:
-            db = get_db()
-            cur = db.cursor()
-            cur.execute(
-                "UPDATE Shows SET title = %s, description = %s, updated_by = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (title, description, g.user["id"], id)
-            )
-            db.commit()
-            return redirect(url_for("scheduler.index"))
 
     return render_template("scheduler/update_show.html", show=show, current_djs=current_djs, all_djs=all_djs)
 

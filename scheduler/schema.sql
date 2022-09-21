@@ -38,8 +38,7 @@ ON Users
 FOR EACH ROW
 EXECUTE PROCEDURE insert_modified_by_id();
 
-CREATE TYPE weekday AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-
+CREATE TYPE Weekday AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
 CREATE TABLE Shows (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,

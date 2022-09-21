@@ -1,27 +1,102 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<div class="flex text-4xl text-gray-800">{% block title %}Edit <div class="pl-2 font-medium italic text-indigo-700">{{ show['title'] }}</div> {% endblock %}</div>
+<div class="flex text-4xl text-gray-800">{% block title %}Editing Show{% endblock %}</div>
 {% endblock %}
 
 {% block content %}
+<div id="error_banner" class="font-bold border-4 mx-8 p-2 text-xl bg-red-300 hidden"></div>
 <div class="text-gray-800">
-  <form class="rounded px-8 pt-6 pb-8 mb-4" method="post">
+  <form class="rounded px-8 mb-4" method="post">
     <label class="block font-bold text-lg mb-2" for="title">Show Title</label>
-    <input class="block w-full border-2 px-2 py-2 mb-4" name="title" id="title" value="{{ request.form['title'] or show['title'] }}" required>
+    <input class="block w-full border-2 p-2 mb-4" name="title" id="title" value="{{ show['title'] }}" required>
+    <label class="block font-bold text-lg mb-2" for="day_of_week">Schedule
+      <div class="flex">
+        <select id="day_of_week" name="day_of_week">
+          <option {{ "selected" if show["day_of_week"] == "Monday" else "" }} >Monday</option>
+          <option {{ "selected" if show["day_of_week"] == "Tuesday" else "" }} >Tuesday</option>
+          <option {{ "selected" if show["day_of_week"] == "Wednesday" else "" }} >Wednesday</option>
+          <option {{ "selected" if show["day_of_week"] == "Thursday" else "" }} >Thursday</option>
+          <option {{ "selected" if show["day_of_week"] == "Friday" else "" }} >Friday</option>
+          <option {{ "selected" if show["day_of_week"] == "Saturday" else "" }} >Saturday</option>
+          <option {{ "selected" if show["day_of_week"] == "Sunday" else "" }} >Sunday</option>
+        </select>
+        <div class="px-2">at</div>
+        <select id="start_time" name="start_time">
+          <option {{ "selected" if show["start_time"].strftime("%I") == "01" else "" }} >1:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "02" else "" }} >2:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "03" else "" }} >3:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "04" else "" }} >4:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "05" else "" }} >5:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "06" else "" }} >6:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "07" else "" }} >7:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "08" else "" }} >8:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "09" else "" }} >9:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "10" else "" }} >10:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "11" else "" }} >11:00</option>
+          <option {{ "selected" if show["start_time"].strftime("%I") == "12" else "" }} >12:00</option>
+        </select>
+        <div class="px-2"></div>
+        <select id="ampm" name="ampm">
+          <option {{ "selected" if show["start_time"].hour >= 12 }} >AM</option>
+          <option {{ "selected" if show["start_time"].hour >= 12 }} >PM</option>
+        </select>
+      </div>
+    </label>
     <label class="block font-bold text-lg mb-2" for="djs">DJs (may select multiple)</label>
-    <select class="block w-full border-2 px-2 py-2 mb-4" multiple name="djs" id="djs">
+    <select class="block w-full border-2 p-2 mb-4" multiple name="djs" id="djs">
       {% for dj in all_djs %}
-      {% if dj['id'] in current_djs %}
-      <option value="{{ dj['id'] }}" selected>{{ dj['name'] }}</option>
+      {% if dj in current_djs %}
+      <option value="{{ dj['id'] }}" selected>{{ dj["name"] }}</option>
       {% else %}
-      <option value="{{ dj['id'] }}">{{ dj['name'] }}</option>
+      <option value="{{ dj['id'] }}">{{ dj["name"] }}</option>
       {% endif %}
       {% endfor %}
     </select>
-    <label class="block font-bold text-lg mb-2" for="description">Description</label>
-    <textarea class="block w-full border-2 px-2 py-2 mb-4" name="description" id="description">{{ request.form['description'] or show['description'] }}</textarea>
-    <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="submit" value="Save">
+    <label class="block font-bold text-lg mb-2" for="description">Show Description</label>
+    <textarea class="block w-full border-2 p-2 mb-4" name="description" id="description">{{ show['description'] }}</textarea>
+    <label class="block font-bold text-lg mb-2" for="file_path">Station Playlist File Path (must match Station Playlist settings)</label>
+    <input class="block w-full border-2 p-2 mb-4" name="file_path" id="file_path" value="{{ show['file_path'] }}" required>
+    <input class="w-full font-bold text-lg border-2 rounded p-2" type="button" value="Save" onclick="upload()">
   </form>
 </div>
+
+<script>
+    async function upload() {
+        let hour = document.getElementById('start_time').value
+        let ampm = document.getElementById('ampm').value
+        let djs = document.getElementById('djs').selectedOptions
+        let djs_arr = []
+        for (var i = 0; i < djs.length; i++) {
+            djs_arr.push(Number(djs[i].value))
+        }
+
+        const post = await fetch(window.location.href.split('?')[0], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'title': document.getElementById('title').value,
+                'djs': djs_arr,
+                'start_time': hour + " " + ampm,
+                'day_of_week': document.getElementById('day_of_week').value,
+                'description': document.getElementById('description').value,
+                'file_path': document.getElementById('file_path').value,
+            })
+        })
+
+        const response = await post.json()
+        if (response.error) {
+            let error_banner = document.getElementById('error_banner')
+            error_banner.innerText = response.error
+            error_banner.style.display = "block"
+        }
+
+        if (response.redirect) {
+            window.location.href = response.redirect
+        }
+    }
+</script>
+
 {% endblock %}
