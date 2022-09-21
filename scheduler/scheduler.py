@@ -35,7 +35,7 @@ def index():
         " FROM Shows s"
         " JOIN UserShowsJoin j ON j.show_id = s.id"
         " JOIN Users creator ON s.created_by = creator.id"
-        " JOIN Users updater on s.updated_by = updater.id"
+        " JOIN Users updater ON s.updated_by = updater.id"
         " WHERE j.user_id = %s"
         " ORDER BY s.created_at DESC",
         (g.user["id"],))
@@ -48,7 +48,7 @@ def index():
             " creator.name as creator, updater.name as updater"
             " FROM Episodes e"
             " JOIN Users creator ON e.created_by = creator.id"
-            " JOIN Users updater on e.updated_by = updater.id"
+            " JOIN Users updater ON e.updated_by = updater.id"
             " WHERE e.show_id = %s"
             " AND e.air_date >= CURRENT_TIMESTAMP"
             " ORDER BY air_date ASC",
@@ -61,7 +61,7 @@ def index():
 
 def get_all_djs():
     """
-    Return list of known djs.
+    Return known djs.
     """
     db = get_db()
     cur = db.cursor()
