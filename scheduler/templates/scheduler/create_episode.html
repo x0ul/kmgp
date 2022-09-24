@@ -47,6 +47,12 @@ input[type="date"]::-webkit-inner-spin-button {
  input[type="date"]::-webkit-clear-button {
      z-index: 1;
  }
+
+ #loading_indicator {
+     width: 1%;
+     height: 30px;
+     background-color: green;
+ }
 </style>
 
 <div id="error_banner" class="font-bold border-4 mx-8 p-2 text-xl bg-red-300 hidden"></div>
@@ -66,9 +72,8 @@ input[type="date"]::-webkit-inner-spin-button {
     <input class="w-full font-bold text-lg border-2 rounded px-2 py-2" type="button" value="Save" onclick="upload()">
   </form>
 
-  <div id="loading_indicator" class="hidden flex justify-center">
-    Loading...
-  </div>
+  <div id="loading_percent" class="hidden flex font-bold text-lg justify-center"></div>
+  <div id="loading_indicator" class="hidden flex justify-center"></div>
 
   <script>
     async function sha1(data) {
@@ -93,49 +98,60 @@ input[type="date"]::-webkit-inner-spin-button {
         const audio_file_sha1 = await sha1(audio_buf)
 
         try {
-            // TODO loading spinner/bar
-            document.querySelector("#loading_indicator").style.display = "block"
-            const b2_post = await fetch(url, {
-                method: 'POST',
-                body: audio_file,
-                headers: {
-                    'Authorization': token,
-                    'X-Bz-File-Name': audio_file_sha1,
-                    'Content-Type': audio_file.type,
-                    'X-Bz-Content-Sha1': audio_file_sha1,
-                    'X-Bz-Info-original-filename': encodeURIComponent(audio_file.name),
-                    'X-Bz-Info-show-title': encodeURIComponent("{{ show['title'] }}"),
-                    'X-Bz-Info-episode-title': encodeURIComponent(document.getElementById('title').value),
-                    'X-Bz-Info-air-date': encodeURIComponent(document.getElementById('air_date').value),
-                    'X-Bz-Info-uploader-uid': {{ g.user['id'] }}
-                },
-            })
-            const b2_response = await b2_post.json();
+            let audio_post = new XMLHttpRequest()
+            audio_post.open('POST', url)
+            audio_post.responseType = "json"
 
-            const form_post = await fetch(window.location.href.split('?')[0], {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            audio_post.setRequestHeader('Authorization', token)
+            audio_post.setRequestHeader('X-Bz-File-Name', audio_file_sha1)
+            audio_post.setRequestHeader('Content-Type', audio_file.type)
+            audio_post.setRequestHeader('X-Bz-Content-Sha1', audio_file_sha1)
+            audio_post.setRequestHeader('X-Bz-Info-original-filename', encodeURIComponent(audio_file.name))
+            audio_post.setRequestHeader('X-Bz-Info-show-title', encodeURIComponent("{{ show['title'] }}"))
+            audio_post.setRequestHeader('X-Bz-Info-episode-title', encodeURIComponent(document.getElementById('title').value))
+            audio_post.setRequestHeader('X-Bz-Info-air-date', encodeURIComponent(document.getElementById('air_date').value))
+            audio_post.setRequestHeader('X-Bz-Info-uploader-uid', {{ g.user['id'] }})
+
+            audio_post.upload.addEventListener('progress', function(e) {
+                let percent_completed = (e.loaded / e.total) * 100
+                document.querySelector("#loading_indicator").style.display = "block"
+                document.querySelector("#loading_indicator").style.width = percent_completed + "%"
+                document.querySelector("#loading_percent").style.display = "block"
+                document.querySelector("#loading_percent").textContent = "Uploading: " + percent_completed.toFixed() + "%"
+                console.log(percent_completed)
+            })
+
+            audio_post.addEventListener('load', function(e) {
+                let form_post = new XMLHttpRequest()
+                form_post.responseType = "json"
+                form_post.open('POST', window.location.href.split('?')[0])
+                form_post.setRequestHeader('Content-Type', 'application/json')
+
+                form_post.addEventListener('load', function(e) {
+                    console.log(form_post.response)
+
+                    if (form_post.response.error) {
+                        let error_banner = document.getElementById('error_banner')
+                        error_banner.innerText = form_post.response.error
+                        error_banner.style.display = "block"
+                    }
+
+                    if (form_post.response.redirect) {
+                        window.location.href = form_post.response.redirect
+                    }
+                })
+
+                form_post.send(JSON.stringify({
                     'title': document.getElementById('title').value,
                     'air_date': document.getElementById('air_date').value,
-                    'file_id': b2_response['fileId'],
+                    'file_id': audio_post.response['fileId'],
                     'original_filename': audio_file.name,
                     'description': document.getElementById('description').value,
-                })
+                }))
             })
 
-            const form_response = await form_post.json()
-            if (form_response.error) {
-                let error_banner = document.getElementById('error_banner')
-                error_banner.innerText = form_response.error
-                error_banner.style.display = "block"
-            }
+            audio_post.send(audio_buf)
 
-            if (form_response.redirect) {
-                window.location.href = form_response.redirect
-            }
         } catch(err) {
             console.log(`error: ${err}`)
         }
